@@ -1,0 +1,30 @@
+# Node
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Git
+.git
+.gitignore
+
+# Docker
+Dockerfile
+.dockerignore
+
+# Environment (don’t bake secrets inside image)
+.env
+.env.local
+.env.*.local
+
+# Build outputs
+dist
+build
+.cache
+.next
+out
+
+# OS
+.DS_Store
+Thumbs.db
