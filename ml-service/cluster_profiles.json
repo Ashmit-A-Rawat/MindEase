@@ -1,0 +1,38 @@
+[
+  {
+    "cluster_id": 0,
+    "label": "High Academic Pressure, Financially Stressed \u2014 High Risk",
+    "size": 9779,
+    "size_pct": 35.0,
+    "depression_rate": 0.695,
+    "mean_academic_pressure": 3.53,
+    "mean_cgpa": 7.64,
+    "mean_study_satisfaction": 2.73,
+    "mean_sleep_hours": 7.48,
+    "mean_financial_stress": 3.59
+  },
+  {
+    "cluster_id": 1,
+    "label": "High Academic Pressure, Poor Sleep, Financially Stressed \u2014 High Risk",
+    "size": 9785,
+    "size_pct": 35.1,
+    "depression_rate": 0.785,
+    "mean_academic_pressure": 3.73,
+    "mean_cgpa": 7.66,
+    "mean_study_satisfaction": 2.66,
+    "mean_sleep_hours": 5.0,
+    "mean_financial_stress": 3.66
+  },
+  {
+    "cluster_id": 2,
+    "label": "Balanced Profile \u2014 Low Risk / Resilient",
+    "size": 8337,
+    "size_pct": 29.9,
+    "depression_rate": 0.222,
+    "mean_academic_pressure": 1.99,
+    "mean_cgpa": 7.67,
+    "mean_study_satisfaction": 3.53,
+    "mean_sleep_hours": 6.03,
+    "mean_financial_stress": 2.0
+  }
+]

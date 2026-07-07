@@ -1,0 +1,55 @@
+{
+  "logistic_regression": {
+    "accuracy": 0.759541300842143,
+    "precision": 0.8151178010471204,
+    "recall": 0.7622399020807834,
+    "f1": 0.7877925363693865,
+    "roc_auc": 0.8351963067563941
+  },
+  "random_forest": {
+    "accuracy": 0.7548826375201577,
+    "precision": 0.7813981042654028,
+    "recall": 0.8072215422276622,
+    "f1": 0.794099939795304,
+    "roc_auc": 0.8170624129170391
+  },
+  "decision_tree_regressor": {
+    "target": "RandomForest predicted risk probability * 100 (distillation, not a ground-truth label)",
+    "mae": 13.505914119290697,
+    "mse": 327.2243408446756,
+    "rmse": 18.089343295008685,
+    "r2": 0.7066071547883057,
+    "adjusted_r2": 0.7059748426219012
+  },
+  "kmeans": {
+    "k": 3,
+    "silhouette_score": 0.14048387436508442,
+    "features": [
+      "Academic Pressure",
+      "CGPA",
+      "Study Satisfaction",
+      "Sleep Duration",
+      "Work/Study Hours",
+      "Financial Stress"
+    ]
+  },
+  "apriori": {
+    "min_support": 0.05,
+    "min_lift": 1.1,
+    "rule_count": 20
+  },
+  "classifier_features": [
+    "Age",
+    "Academic Pressure",
+    "Work Pressure",
+    "CGPA",
+    "Study Satisfaction",
+    "Job Satisfaction",
+    "Sleep Duration",
+    "Work/Study Hours",
+    "Total Pressure",
+    "Dietary Habits_Moderate",
+    "Dietary Habits_Others",
+    "Dietary Habits_Unhealthy"
+  ]
+}

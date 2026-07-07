@@ -1,0 +1,13 @@
+{
+  "name": "mindease",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Root dev orchestrator — boots every MindEase service together. See .env.example for the port map.",
+  "scripts": {
+    "setup:python": "python3 -m venv ml-service/.venv && ml-service/.venv/bin/pip install -r ml-service/requirements.txt && python3.11 -m venv StudentVerification/.venv && StudentVerification/.venv/bin/pip install -r StudentVerification/requirements.txt",
+    "dev": "concurrently -n backend,frontend,ml,verify,spotify-api,spotify-ui -c blue,green,magenta,yellow,cyan,white \"npm run dev --prefix backend\" \"npm run dev --prefix frontend\" \"cd ml-service && .venv/bin/python app.py\" \"StudentVerification/.venv/bin/uvicorn main:app --reload --port 8000 --app-dir StudentVerification\" \"npm run server --prefix Spotify\" \"npm run dev --prefix Spotify\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}

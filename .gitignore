@@ -1,0 +1,19 @@
+# Root-level dev orchestration artifacts
+node_modules/
+.venv/
+__pycache__/
+*.pyc
+
+# Env files (per-service .env files hold real secrets; only .env.example is committed)
+.env
+.env.local
+
+# Logs
+logs
+*.log
+
+# OS / editor
+.DS_Store
+.vscode/*
+!.vscode/extensions.json
+.idea

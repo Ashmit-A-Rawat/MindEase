@@ -1,0 +1,280 @@
+[
+  {
+    "antecedents": [
+      "AtRisk",
+      "LowStudySatisfaction"
+    ],
+    "consequents": [
+      "HighAcademicPressure",
+      "HighWorkStudyHours",
+      "SuicidalThoughts"
+    ],
+    "support": 0.0614,
+    "confidence": 0.2245,
+    "lift": 1.7378
+  },
+  {
+    "antecedents": [
+      "HighAcademicPressure",
+      "HighWorkStudyHours",
+      "SuicidalThoughts"
+    ],
+    "consequents": [
+      "AtRisk",
+      "LowStudySatisfaction"
+    ],
+    "support": 0.0614,
+    "confidence": 0.4753,
+    "lift": 1.7378
+  },
+  {
+    "antecedents": [
+      "AtRisk",
+      "LowStudySatisfaction"
+    ],
+    "consequents": [
+      "FinancialStress",
+      "HighAcademicPressure",
+      "SuicidalThoughts"
+    ],
+    "support": 0.0784,
+    "confidence": 0.2867,
+    "lift": 1.7365
+  },
+  {
+    "antecedents": [
+      "FinancialStress",
+      "HighAcademicPressure",
+      "SuicidalThoughts"
+    ],
+    "consequents": [
+      "AtRisk",
+      "LowStudySatisfaction"
+    ],
+    "support": 0.0784,
+    "confidence": 0.4749,
+    "lift": 1.7365
+  },
+  {
+    "antecedents": [
+      "HighAcademicPressure",
+      "SuicidalThoughts"
+    ],
+    "consequents": [
+      "AtRisk",
+      "FamilyHistory",
+      "LowStudySatisfaction"
+    ],
+    "support": 0.0722,
+    "confidence": 0.2334,
+    "lift": 1.6975
+  },
+  {
+    "antecedents": [
+      "AtRisk",
+      "FamilyHistory",
+      "LowStudySatisfaction"
+    ],
+    "consequents": [
+      "HighAcademicPressure",
+      "SuicidalThoughts"
+    ],
+    "support": 0.0722,
+    "confidence": 0.5253,
+    "lift": 1.6975
+  },
+  {
+    "antecedents": [
+      "AtRisk",
+      "LowStudySatisfaction"
+    ],
+    "consequents": [
+      "HighAcademicPressure",
+      "SuicidalThoughts"
+    ],
+    "support": 0.1426,
+    "confidence": 0.5216,
+    "lift": 1.6854
+  },
+  {
+    "antecedents": [
+      "HighAcademicPressure",
+      "SuicidalThoughts"
+    ],
+    "consequents": [
+      "AtRisk",
+      "LowStudySatisfaction"
+    ],
+    "support": 0.1426,
+    "confidence": 0.461,
+    "lift": 1.6854
+  },
+  {
+    "antecedents": [
+      "FamilyHistory",
+      "HighAcademicPressure",
+      "SuicidalThoughts"
+    ],
+    "consequents": [
+      "AtRisk",
+      "LowStudySatisfaction"
+    ],
+    "support": 0.0722,
+    "confidence": 0.4607,
+    "lift": 1.6844
+  },
+  {
+    "antecedents": [
+      "AtRisk",
+      "LowStudySatisfaction"
+    ],
+    "consequents": [
+      "FamilyHistory",
+      "HighAcademicPressure",
+      "SuicidalThoughts"
+    ],
+    "support": 0.0722,
+    "confidence": 0.2641,
+    "lift": 1.6844
+  },
+  {
+    "antecedents": [
+      "AtRisk",
+      "FamilyHistory"
+    ],
+    "consequents": [
+      "FinancialStress",
+      "HighAcademicPressure",
+      "SuicidalThoughts"
+    ],
+    "support": 0.0822,
+    "confidence": 0.2772,
+    "lift": 1.6786
+  },
+  {
+    "antecedents": [
+      "FinancialStress",
+      "HighAcademicPressure",
+      "SuicidalThoughts"
+    ],
+    "consequents": [
+      "AtRisk",
+      "FamilyHistory"
+    ],
+    "support": 0.0822,
+    "confidence": 0.4977,
+    "lift": 1.6786
+  },
+  {
+    "antecedents": [
+      "HighAcademicPressure",
+      "HighWorkStudyHours",
+      "SuicidalThoughts"
+    ],
+    "consequents": [
+      "AtRisk",
+      "FamilyHistory"
+    ],
+    "support": 0.0641,
+    "confidence": 0.4961,
+    "lift": 1.6732
+  },
+  {
+    "antecedents": [
+      "AtRisk",
+      "FamilyHistory"
+    ],
+    "consequents": [
+      "HighAcademicPressure",
+      "HighWorkStudyHours",
+      "SuicidalThoughts"
+    ],
+    "support": 0.0641,
+    "confidence": 0.2161,
+    "lift": 1.6732
+  },
+  {
+    "antecedents": [
+      "AtRisk",
+      "HighWorkStudyHours",
+      "LowStudySatisfaction"
+    ],
+    "consequents": [
+      "HighAcademicPressure",
+      "SuicidalThoughts"
+    ],
+    "support": 0.0614,
+    "confidence": 0.5161,
+    "lift": 1.6679
+  },
+  {
+    "antecedents": [
+      "HighAcademicPressure",
+      "SuicidalThoughts"
+    ],
+    "consequents": [
+      "AtRisk",
+      "HighWorkStudyHours",
+      "LowStudySatisfaction"
+    ],
+    "support": 0.0614,
+    "confidence": 0.1984,
+    "lift": 1.6679
+  },
+  {
+    "antecedents": [
+      "FinancialStress",
+      "HighAcademicPressure",
+      "HighWorkStudyHours",
+      "SuicidalThoughts"
+    ],
+    "consequents": [
+      "AtRisk"
+    ],
+    "support": 0.069,
+    "confidence": 0.9752,
+    "lift": 1.6655
+  },
+  {
+    "antecedents": [
+      "AtRisk"
+    ],
+    "consequents": [
+      "FinancialStress",
+      "HighAcademicPressure",
+      "HighWorkStudyHours",
+      "SuicidalThoughts"
+    ],
+    "support": 0.069,
+    "confidence": 0.1178,
+    "lift": 1.6655
+  },
+  {
+    "antecedents": [
+      "FinancialStress",
+      "HighAcademicPressure",
+      "LowStudySatisfaction",
+      "SuicidalThoughts"
+    ],
+    "consequents": [
+      "AtRisk"
+    ],
+    "support": 0.0784,
+    "confidence": 0.9746,
+    "lift": 1.6646
+  },
+  {
+    "antecedents": [
+      "AtRisk"
+    ],
+    "consequents": [
+      "FinancialStress",
+      "HighAcademicPressure",
+      "LowStudySatisfaction",
+      "SuicidalThoughts"
+    ],
+    "support": 0.0784,
+    "confidence": 0.1339,
+    "lift": 1.6646
+  }
+]

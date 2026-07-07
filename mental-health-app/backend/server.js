@@ -1,3 +1,6 @@
+// DEPRECATED: scheduled for deletion in Phase 5 (MindEase de-fragmentation plan).
+// Risk prediction now lives in root /ml-service, called directly from the main
+// backend's mlRoutes.js. Do not build new features on this file.
 import express from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
@@ -117,7 +120,7 @@ app.get("/api/health", async (req, res) => {
     
     try {
       // Check ML service with shorter timeout
-      const mlHealth = await axios.get("http://127.0.0.1:5001/health", { 
+      const mlHealth = await axios.get("http://127.0.0.1:5002/health", {
         timeout: 3000 
       });
       mlServiceStatus = mlHealth.data;
@@ -125,18 +128,18 @@ app.get("/api/health", async (req, res) => {
       console.log("ML service check failed:", mlError.message);
       mlServiceStatus = {
         status: "unreachable",
-        message: "ML service not running on port 5001"
+        message: "ML service not running on port 5002"
       };
     }
-    
+
     const healthStatus = {
       backend: "healthy",
       database: mongoose.connection.readyState === 1 ? "connected" : "disconnected",
       ml_service: mlServiceStatus,
       timestamp: new Date().toISOString(),
       ports: {
-        backend: process.env.PORT || 8000,
-        ml_service: 5001,
+        backend: process.env.PORT || 5004,
+        ml_service: 5002,
         expected_frontend: [5173, 5174, 3000]
       }
     };
@@ -205,7 +208,7 @@ app.post("/api/submit", async (req, res) => {
     let mlResponse;
     try {
       // Call Python ML API with extended timeout
-      mlResponse = await axios.post("http://127.0.0.1:5001/predict", { 
+      mlResponse = await axios.post("http://127.0.0.1:5002/predict", {
         responses: responses 
       }, {
         timeout: 30000, // 30 second timeout
@@ -483,7 +486,7 @@ app.use((req, res) => {
   });
 });
 
-const PORT = process.env.PORT || 8000;
+const PORT = process.env.PORT || 5004;
 app.listen(PORT, () => {
   console.log(`✅ Backend server running on port ${PORT}`);
   console.log(`🌐 Server URL: http://localhost:${PORT}`);
