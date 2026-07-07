@@ -6,7 +6,18 @@ const testAttemptSchema = new mongoose.Schema({
   score: Number,
   severity: String,
   recommendation: String,
-  createdAt: { type: Date, default: Date.now }
+  createdAt: { type: Date, default: Date.now },
+  // Populated best-effort by mlClient.js at save time — absent if the ML
+  // service was unreachable, never blocks saving the test itself.
+  mlAnalysis: {
+    riskPrediction: Number,
+    riskProbability: Number,
+    riskLevel: String,
+    wellnessScore: Number,
+    clusterId: Number,
+    clusterLabel: String,
+    computedAt: Date,
+  },
 });
 
 const testResultSchema = new mongoose.Schema({
