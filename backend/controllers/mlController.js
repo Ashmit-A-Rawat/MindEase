@@ -64,3 +64,11 @@ export const getAssociations = async (req, res) => {
   }
   res.json(result.data);
 };
+
+export const getFeatureImportance = async (req, res) => {
+  const result = await callMlService("get", "/analysis/feature-importance");
+  if (!result.ok) {
+    return res.status(503).json({ success: false, message: "ML service unavailable", error: result.error });
+  }
+  res.json(result.data);
+};

@@ -23,6 +23,7 @@ import userRoutesMain from "./routes/userRoutes.js"; // /api1/users
 import testRoutes from "./routes/testRoutes.js";
 import analysisRoutes from "./routes/analysisRoutes.js";
 import mlRoutes from "./routes/mlRoutes.js";
+import wellnessRoutes from "./routes/wellnessRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 
 // Chat app routes
@@ -90,6 +91,7 @@ app.use("/api1/users", userRoutesMain);
 app.use("/api1/tests", testRoutes);
 app.use("/api1/analysis", analysisRoutes);
 app.use("/api1/ml", mlRoutes);
+app.use("/api1/wellness", wellnessRoutes);
 
 // Chat endpoints
 app.use("/api1/user", userRoutes);

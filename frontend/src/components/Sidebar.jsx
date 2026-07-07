@@ -256,6 +256,7 @@ export function SidebarDemo({ role = "student", id }) {
     { label: "AI Support", href: `/${role}/${id}/ai-support`, icon: <Svg.Search /> },
     { label: "Tests", href: `/student/${id}/tests`, icon: <Svg.Book /> },
     { label: "Reports", href: `/student/${id}/reports`, icon: <Svg.Chart /> },
+    { label: "Wellness Profile", href: `/student/${id}/wellness-intake`, icon: <Svg.Heart /> },
     { label: "Resources", href: `/${role}/${id}/resources`, icon: <Svg.Book /> },
     { label: "Music Therapy", href: "http://127.0.0.1:5174", external: true, icon: <IconChartLine className="h-5 w-5 shrink-0" /> }
   ];

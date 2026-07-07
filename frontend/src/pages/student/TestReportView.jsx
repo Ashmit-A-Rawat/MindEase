@@ -194,6 +194,33 @@ export default function TestReportView() {
             </div>
           </div>
 
+          {test.mlAnalysis?.riskLevel && (
+            <div className="mb-8">
+              <h2 className="text-xl font-semibold text-gray-800 mb-3 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-teal-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                Personalized Risk Assessment
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">
+                  <p className="text-xs text-blue-600 font-medium uppercase tracking-wider">Risk Level</p>
+                  <p className="text-lg font-bold text-blue-800 mt-1">{test.mlAnalysis.riskLevel}</p>
+                </div>
+                <div className="bg-teal-50 p-4 rounded-xl border border-teal-100">
+                  <p className="text-xs text-teal-600 font-medium uppercase tracking-wider">Wellness Score</p>
+                  <p className="text-lg font-bold text-teal-800 mt-1">
+                    {test.mlAnalysis.wellnessScore != null ? `${test.mlAnalysis.wellnessScore}/100` : "—"}
+                  </p>
+                </div>
+                <div className="bg-indigo-50 p-4 rounded-xl border border-indigo-100">
+                  <p className="text-xs text-indigo-600 font-medium uppercase tracking-wider">Risk Segment</p>
+                  <p className="text-sm font-medium text-indigo-800 mt-1">{test.mlAnalysis.clusterLabel || "—"}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div>
             <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-teal-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">

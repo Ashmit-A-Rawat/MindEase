@@ -8,6 +8,8 @@ export default function TestPage() {
   const [questions, setQuestions] = useState([]);
   const [answers, setAnswers] = useState([]);
   const [result, setResult] = useState(null);
+  const [mlResult, setMlResult] = useState(null);
+  const [mlLoading, setMlLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentQuestion, setCurrentQuestion] = useState(0);
 
@@ -77,16 +79,38 @@ export default function TestPage() {
       const severity = getSeverity(score);
       const recommendation = getRecommendation(severity);
 
-      await api.post("/tests/results", { 
-        studentId, 
-        testType, 
-        answers, 
-        score, 
-        severity, 
-        recommendation 
+      await api.post("/tests/results", {
+        studentId,
+        testType,
+        answers,
+        score,
+        severity,
+        recommendation
       });
-      
+
       setResult({ score, severity, recommendation });
+
+      // Fetch a model-backed risk assessment alongside the static severity
+      // bucket above. Best-effort — a down ML service shouldn't block the
+      // student from seeing their test result.
+      setMlLoading(true);
+      try {
+        const [riskRes, wellnessRes] = await Promise.all([
+          api.get(`/ml/risk/${studentId}`),
+          api.get(`/ml/wellness-score/${studentId}`),
+        ]);
+        setMlResult({
+          riskLevel: riskRes.data?.analysis?.risk_level,
+          riskColor: riskRes.data?.analysis?.risk_color,
+          probability: riskRes.data?.probability,
+          wellnessScore: wellnessRes.data?.wellness_score,
+          featureImportance: riskRes.data?.feature_importance,
+        });
+      } catch (mlError) {
+        console.error("ML risk assessment unavailable:", mlError);
+      } finally {
+        setMlLoading(false);
+      }
     } catch (error) {
       console.error("Error submitting test:", error);
     } finally {
@@ -273,6 +297,59 @@ export default function TestPage() {
               </h3>
               <p className="text-gray-700">{result.recommendation}</p>
             </div>
+
+            {mlLoading && (
+              <div className="mt-4 p-4 rounded-lg border border-gray-200 bg-gray-50 text-sm text-gray-500 flex items-center">
+                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Computing your personalized risk assessment...
+              </div>
+            )}
+
+            {mlResult && (
+              <div className="mt-4 p-4 rounded-lg border-2 animate-fade-in" style={{ borderColor: mlResult.riskColor || "#e5e7eb" }}>
+                <h3 className="text-lg font-semibold text-gray-800 mb-3">Personalized Risk Assessment</h3>
+                <div className="grid grid-cols-2 gap-4 mb-3">
+                  <div>
+                    <p className="text-xs text-gray-500 uppercase tracking-wider">Risk Level</p>
+                    <p className="text-lg font-bold" style={{ color: mlResult.riskColor || "#374151" }}>
+                      {mlResult.riskLevel || "Unavailable"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500 uppercase tracking-wider">Wellness Score</p>
+                    <p className="text-lg font-bold text-gray-800">
+                      {mlResult.wellnessScore != null ? `${mlResult.wellnessScore}/100` : "—"}
+                    </p>
+                  </div>
+                </div>
+                {mlResult.featureImportance?.length > 0 && (
+                  <div>
+                    <p className="text-xs text-gray-500 uppercase tracking-wider mb-2">Top Contributing Factors</p>
+                    <div className="flex flex-wrap gap-2">
+                      {mlResult.featureImportance.map((f) => (
+                        <span key={f.feature} className="px-2 py-1 bg-white border border-gray-200 rounded-full text-xs text-gray-700">
+                          {f.feature}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                <p className="text-xs text-gray-400 mt-3">
+                  Based on your Wellness Profile. {" "}
+                  <button
+                    type="button"
+                    onClick={() => navigate(`/student/${studentId}/wellness-intake`)}
+                    className="text-teal-600 hover:underline"
+                  >
+                    Update it
+                  </button>
+                  {" "}for a more accurate assessment.
+                </p>
+              </div>
+            )}
 
             <div className="mt-6 flex justify-center">
               <button 

@@ -558,6 +558,20 @@ async def get_associations():
     return {"success": True, "rules": aux_models["association_rules"]}
 
 
+@app.get("/analysis/feature-importance")
+async def get_feature_importance():
+    """Global RF feature importance — a property of the trained model, not of
+    any single request, so this doesn't need student input."""
+    if model is None or feature_columns is None or not hasattr(model, "feature_importances_"):
+        raise HTTPException(status_code=503, detail="Model not loaded")
+    ranked = sorted(
+        [{"feature": f, "importance": round(float(imp), 4)}
+         for f, imp in zip(feature_columns, model.feature_importances_)],
+        key=lambda x: x["importance"], reverse=True
+    )
+    return {"success": True, "feature_importance": ranked}
+
+
 @app.get("/health")
 async def health_check():
     health_status = {

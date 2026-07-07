@@ -1,10 +1,14 @@
 import React, { useEffect, useState } from "react";
-import axios from "../../lib/api"; 
+import axios from "../../lib/api";
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from "recharts";
 
 const Analysis = () => {
   const [data, setData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [clusters, setClusters] = useState(null);
+  const [associations, setAssociations] = useState(null);
+  const [featureImportance, setFeatureImportance] = useState(null);
+  const [mlLoading, setMlLoading] = useState(true);
 
   useEffect(() => {
     const fetchAnalysis = async () => {
@@ -19,6 +23,28 @@ const Analysis = () => {
     };
     fetchAnalysis();
   }, []);
+
+  useEffect(() => {
+    const fetchMlAnalysis = async () => {
+      try {
+        const [clustersRes, associationsRes, featureRes] = await Promise.allSettled([
+          axios.get("/ml/clusters"),
+          axios.get("/ml/associations"),
+          axios.get("/ml/feature-importance"),
+        ]);
+        if (clustersRes.status === "fulfilled") setClusters(clustersRes.value.data.clusters);
+        if (associationsRes.status === "fulfilled") setAssociations(associationsRes.value.data.rules);
+        if (featureRes.status === "fulfilled") setFeatureImportance(featureRes.value.data.feature_importance);
+      } catch (error) {
+        console.error("Error fetching ML analysis:", error);
+      } finally {
+        setMlLoading(false);
+      }
+    };
+    fetchMlAnalysis();
+  }, []);
+
+  const CLUSTER_COLORS = ["#6366f1", "#ef4444", "#10b981", "#f59e0b", "#8b5cf6", "#06b6d4"];
 
   // Soothing color palette
   const SEVERITY_COLORS = {
@@ -212,6 +238,100 @@ const Analysis = () => {
         </div>
 
         {renderBarChart()}
+
+        <div className="mt-8 mb-6">
+          <h2 className="text-2xl font-bold text-gray-800">Machine Learning Insights</h2>
+          <p className="text-gray-600 text-sm mt-1">Population-level patterns from the risk model, K-Means clustering, and Apriori association mining</p>
+        </div>
+
+        {mlLoading ? (
+          <div className="bg-white rounded-2xl shadow-sm p-8 text-center text-gray-500">Loading ML insights...</div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            {clusters && (
+              <div className="bg-white rounded-2xl shadow-sm p-6 border border-blue-50">
+                <h3 className="text-lg font-bold text-gray-800 mb-1">Student Risk Segments</h3>
+                <p className="text-sm text-gray-600 mb-4">K-Means clusters from lifestyle + academic factors</p>
+                <div className="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={clusters}
+                        dataKey="size"
+                        nameKey="label"
+                        cx="50%" cy="50%"
+                        innerRadius={55} outerRadius={80}
+                      >
+                        {clusters.map((c, i) => (
+                          <Cell key={c.cluster_id} fill={CLUSTER_COLORS[i % CLUSTER_COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip formatter={(value, name, props) => [`${value} students (${props.payload.size_pct}%)`, props.payload.label]} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+                <div className="space-y-2 mt-2">
+                  {clusters.map((c, i) => (
+                    <div key={c.cluster_id} className="flex items-start justify-between text-sm">
+                      <div className="flex items-start">
+                        <div className="w-3 h-3 rounded-full mr-2 mt-1 shrink-0" style={{ backgroundColor: CLUSTER_COLORS[i % CLUSTER_COLORS.length] }}></div>
+                        <span className="text-gray-700">{c.label}</span>
+                      </div>
+                      <span className="font-medium text-gray-900 shrink-0 ml-2">{c.size_pct}%</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {featureImportance && (
+              <div className="bg-white rounded-2xl shadow-sm p-6 border border-blue-50">
+                <h3 className="text-lg font-bold text-gray-800 mb-1">Top Contributing Factors</h3>
+                <p className="text-sm text-gray-600 mb-4">Random Forest feature importance for risk prediction</p>
+                <div className="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={featureImportance} layout="vertical" margin={{ left: 20 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                      <XAxis type="number" fontSize={12} />
+                      <YAxis type="category" dataKey="feature" width={110} fontSize={12} />
+                      <Tooltip />
+                      <Bar dataKey="importance" fill="#6366f1" radius={[0, 4, 4, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {!mlLoading && associations?.length > 0 && (
+          <div className="bg-white rounded-2xl shadow-sm p-6 border border-blue-50 mb-6">
+            <h3 className="text-lg font-bold text-gray-800 mb-1">Risk Factor Associations</h3>
+            <p className="text-sm text-gray-600 mb-4">Apriori-mined combinations most strongly linked to elevated risk</p>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-xs text-gray-500 uppercase border-b border-gray-200">
+                    <th className="pb-2 pr-4">If a student has</th>
+                    <th className="pb-2 pr-4">Then</th>
+                    <th className="pb-2 pr-4">Confidence</th>
+                    <th className="pb-2">Lift</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {associations.slice(0, 10).map((rule, i) => (
+                    <tr key={i} className="border-b border-gray-100 hover:bg-blue-50">
+                      <td className="py-2 pr-4 text-gray-700">{rule.antecedents.join(", ")}</td>
+                      <td className="py-2 pr-4 text-gray-700">{rule.consequents.join(", ")}</td>
+                      <td className="py-2 pr-4 text-gray-900 font-medium">{Math.round(rule.confidence * 100)}%</td>
+                      <td className="py-2 text-gray-900 font-medium">{rule.lift.toFixed(2)}x</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
 
         <div className="mt-6 bg-blue-50 rounded-2xl p-6 border border-blue-200">
           <h3 className="text-lg font-semibold text-blue-800 mb-3 flex items-center">
