@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 
-const SPOTIFY_API = "http://localhost:5005";
+const SPOTIFY_API = import.meta.env.VITE_SPOTIFY_SERVICE_URL || "http://localhost:5005";
 
 export default function MusicTherapy() {
   const [token, setToken] = useState(localStorage.getItem("spotify_token"));

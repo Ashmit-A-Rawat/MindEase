@@ -1,10 +1,14 @@
 import axios from "axios";
-const api = axios.create({ baseURL: "http://localhost:5001/api1" });
+
+export const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001/api1";
+export const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5001";
+
+const api = axios.create({ baseURL: API_URL });
 export default api;
 
 
 export const axiosInstance = axios.create({
-  baseURL : "http://localhost:5001/api1",
+  baseURL : API_URL,
   withCredentials : true,
 });
 

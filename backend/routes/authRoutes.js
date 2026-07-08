@@ -42,7 +42,7 @@ router.get(
       sameSite: "lax", // or 'none' + secure:true when needed
       maxAge: 7*24*60*60*1000
     });
-    res.redirect("http://localhost:5173/login?oauth=google")
+    res.redirect(`${process.env.CLIENT_URL || "http://localhost:5173"}/login?oauth=google`)
    }
 );
 

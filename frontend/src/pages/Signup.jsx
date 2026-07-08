@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { signup } from "../lib/api.js"; 
+import { signup, BACKEND_URL } from "../lib/api.js";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../contexts/useAuth.js";
 
@@ -79,7 +79,7 @@ const Signup = () => {
   };
 
   const handleGoogleSignup = () => {
-    window.location.href = "http://localhost:5001/api1/auth/google";
+    window.location.href = `${BACKEND_URL}/api1/auth/google`;
   };
 
   return (

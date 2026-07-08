@@ -6,8 +6,8 @@ import { MdDelete } from "react-icons/md";
 import { useAuth } from "../contexts/useAuth.js";
 import { useNavigate } from "react-router-dom";
 
-const FASTAPI_VERIFY_URL = "http://localhost:8000/verify";      // FastAPI -> expects JSON with name, college_name, academic_year, dob
-const NODE_UPDATE_URL = "http://localhost:5001/api1/users/update";   // Node -> expects multipart/form-data + verification JSON (stringified)
+const FASTAPI_VERIFY_URL = `${import.meta.env.VITE_STUDENT_VERIFICATION_URL || "http://localhost:8000"}/verify`;      // FastAPI -> expects JSON with name, college_name, academic_year, dob
+const NODE_UPDATE_URL = `${import.meta.env.VITE_API_URL || "http://localhost:5001/api1"}/users/update`;   // Node -> expects multipart/form-data + verification JSON (stringified)
 
 const StudentForm = () => {
   const { currentUser, fetchUser, setUserFromResponse } = useAuth();

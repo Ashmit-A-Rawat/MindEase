@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 import { createContext, useEffect, useState, useCallback } from "react";
-import { axiosInstance } from "../lib/api";
+import { axiosInstance, BACKEND_URL } from "../lib/api";
 
 const AuthContext = createContext();
 
@@ -50,11 +50,11 @@ export const AuthProvider = ({ children }) => {
   };
 
   const googlelogin = () => {
-    window.location.href = "http://localhost:5001/api1/auth/google";
+    window.location.href = `${BACKEND_URL}/api1/auth/google`;
   };
 
   const googlelogout = () => {
-    window.location.href = "http://localhost:5001/api1/logout";
+    window.location.href = `${BACKEND_URL}/api1/logout`;
   };
 
   return (

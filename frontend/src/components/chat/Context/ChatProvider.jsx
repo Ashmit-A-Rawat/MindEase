@@ -19,12 +19,14 @@ const ChatProvider = ({ children }) => {
 
       if (!userInfo) {
         // if not logged in, redirect to home
-        //window.location.href("http://localhost:5173/");
         return;
       }
     } catch (e) {
+      // Was previously `window.location.href("...")` — calling .href as a
+      // function throws (it's a string property, not a method), so this
+      // catch block's own recovery path was itself broken.
       console.warn("ChatProvider: failed to parse localStorage userInfo", e);
-      window.location.href("http://localhost:5173/");
+      window.location.href = window.location.origin + "/";
     }
   }, [navigate]);
 

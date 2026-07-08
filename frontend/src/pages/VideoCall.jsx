@@ -3,9 +3,10 @@ import { useParams, useLocation, useNavigate } from "react-router-dom";
 import io from "socket.io-client";
 import Peer from "simple-peer";
 import { useAuth } from "../contexts/useAuth.js";
+import { BACKEND_URL } from "../lib/api.js";
 
-const ENDPOINT = "http://localhost:5001";
-const EMOTION_API = "http://localhost:5006";
+const ENDPOINT = BACKEND_URL;
+const EMOTION_API = import.meta.env.VITE_EMOTION_SERVICE_URL || "http://localhost:5006";
 const EMOTION_CAPTURE_INTERVAL_MS = 4000;
 
 // STUN alone (the previous setup) only helps peers discover their public

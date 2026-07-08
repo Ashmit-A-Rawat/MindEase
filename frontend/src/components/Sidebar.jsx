@@ -306,7 +306,7 @@ export function SidebarDemo({ role = "student", id }) {
           <button
             onClick={() => {
               localStorage.removeItem("userInfo");
-              window.location.href = "http://localhost:5173/";
+              window.location.href = window.location.origin + "/";
             }}
             className="w-full text-left px-3 py-2 rounded hover:bg-white text-indigo-700"
           >

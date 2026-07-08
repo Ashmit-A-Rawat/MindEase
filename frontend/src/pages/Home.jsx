@@ -6,7 +6,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useTranslation } from 'react-i18next';
 import axios from "axios";
 
-const SPOTIFY_API = "http://localhost:5005";
+const SPOTIFY_API = import.meta.env.VITE_SPOTIFY_SERVICE_URL || "http://localhost:5005";
 
 // Register ScrollTrigger plugin
 gsap.registerPlugin(ScrollTrigger);

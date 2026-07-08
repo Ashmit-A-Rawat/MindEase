@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { axiosInstance} from "../../lib/api.js";
+import { axiosInstance, BACKEND_URL } from "../../lib/api.js";
 import { ArrowLeft, Send, Image, Smile } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Lottie from "react-lottie";
@@ -11,7 +11,7 @@ import ScrollableChat from "./ScrollableChat";
 import UpdateGroupChatModal from "./miscellaneous/UpdateGroupChatModal";
 import { ChatState } from "./Context/ChatProvider";
 
-const ENDPOINT = "http://localhost:5001";
+const ENDPOINT = BACKEND_URL;
 let socket, selectedChatCompare;
 
 const SingleChat = ({ fetchAgain, setFetchAgain }) => {
