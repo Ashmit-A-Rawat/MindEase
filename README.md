@@ -31,6 +31,8 @@ MindEase addresses this gap by providing **confidential**, **culturally relevant
 | 🎵 **Music Therapy** | Spotify integration — curated and personal playlists, accessible without leaving the app. |
 | 🗣️ **Multilingual Support** | i18n scaffolding for English, Hindi, Marathi, and Tamil. |
 | 🤖 **AI Support Chat** | Embedded conversational assistant for emotional support and coping strategies (currently a third-party widget — see Roadmap for a custom, safety-gated LLM). |
+| 🎥 **Live Video Counseling** | Peer-to-peer WebRTC video calls between student and counsellor for Online-mode appointments, no third-party video service involved. |
+| 😊 **Real-Time Emotion Detection** | OpenCV + CNN facial emotion classification (7 categories) during live calls — each participant's camera is analyzed locally and the result relayed to the other side, so the counsellor can see the student's emotional state (and vice versa) without either party's video ever leaving their own browser except as periodic frames to the detection service. |
 
 ---
 
@@ -38,8 +40,10 @@ MindEase addresses this gap by providing **confidential**, **culturally relevant
 
 - **Machine Learning Models:** Logistic Regression, Random Forest, Decision Tree Regression, K-Means clustering, and Apriori association rule mining — trained on a public student depression dataset, served via a dedicated FastAPI ML microservice (`ml-service/`). See `ml-service/SCHEMA_MAPPING.md` for exactly which inputs drive which model.
 - **OCR Verification:** Student ID authentication via OpenCV + EasyOCR + fuzzy string matching (`StudentVerification/`).
+- **Emotion Detection:** OpenCV (Haar cascade face detection) + a pretrained CNN (`emotion-service/`, TensorFlow Lite backend via the `fer` package) — 7-class facial emotion classification during live video calls.
+- **Live Video:** WebRTC (`simple-peer`) for peer-to-peer counseling calls, signaled through the existing Socket.io server — no video ever transits the backend, only the SDP/ICE handshake.
 - **Backend Architecture:** Node/Express REST API (`/api1/*`) for auth, appointments, tests, chat, and ML — proxying to the Python ML microservice rather than reimplementing model inference.
-- **Real-time Communication:** Socket.io for one-to-one and group peer/counsellor chat.
+- **Real-time Communication:** Socket.io for chat, WebRTC signaling, and emotion-label relay during calls.
 - **Data Security:** Password hashing (bcrypt), JWT + session auth, HttpOnly cookies.
 
 ---
@@ -52,6 +56,8 @@ MindEase addresses this gap by providing **confidential**, **culturally relevant
 | **Main Backend** | Node.js / Express, MongoDB (Mongoose), Socket.io, Passport (Google OAuth) |
 | **ML Service** | Python / FastAPI, scikit-learn, pandas, mlxtend (Apriori) |
 | **OCR Service** | Python / FastAPI, OpenCV, EasyOCR, RapidFuzz |
+| **Emotion Service** | Python / FastAPI, OpenCV, `fer` (CNN via TensorFlow Lite) |
+| **Live Video** | WebRTC, `simple-peer`, Socket.io (signaling) |
 | **Music Integration** | Spotify Web API (Node/Express proxy) |
 
 ---
@@ -62,22 +68,21 @@ Honesty check for anyone evaluating this repo: the items below appear in earlier
 
 | Item | Status |
 |---|---|
-| **Live WebRTC video/audio counseling** | Not built. Appointments currently support scheduling and chat, not live video. |
-| **Real-time emotion detection (OpenCV + CNN)** | Not built. |
 | **Custom LLM psychological-first-aid chatbot** | Current "AI Support" is a third-party embedded widget, not a custom model. A safety-gated (crisis-keyword override before any model response) RAG chatbot is planned. |
-| **Twilio integration** | Not built. |
+| **Twilio integration** | Not built — live video uses WebRTC directly instead. |
 | **HIPAA/GDPR formal compliance** | Architecture follows good-practice patterns (hashed passwords, JWT, HttpOnly cookies) but has not undergone formal compliance review. |
+| **TURN server for WebRTC** | Calls currently rely on STUN only; participants on strict/symmetric NATs (common on some corporate or campus networks) may fail to connect peer-to-peer without one. |
 
 ---
 
 ## 🏃 Running Locally
 
-This repo is five services: main frontend, main backend, an ML microservice, an OCR microservice, and a Spotify proxy. See `.env.example` for the full port map and required environment variables — copy the relevant block into each service's own `.env`.
+This repo is six services: main frontend, main backend, an ML microservice, an OCR microservice, an emotion-detection microservice, and a Spotify proxy. See `.env.example` for the full port map and required environment variables — copy the relevant block into each service's own `.env`.
 
 ```bash
 # One-time setup
 npm install                 # root dev-orchestration deps (concurrently)
-npm run setup:python        # creates ml-service/.venv and StudentVerification/.venv
+npm run setup:python        # creates ml-service/, StudentVerification/, and emotion-service/ .venv's
 cd backend && npm install && cd ..
 cd frontend && npm install && cd ..
 cd Spotify && npm install && cd ..
@@ -86,7 +91,7 @@ cd Spotify && npm install && cd ..
 npm run dev
 ```
 
-`StudentVerification` requires Python ≥3.11 (`networkx` pin) — `setup:python` invokes `python3.11` explicitly for it. `ml-service` works with the default `python3`.
+`StudentVerification` and `emotion-service` require Python ≥3.11 — `setup:python` invokes `python3.11` explicitly for both. `ml-service` works with the default `python3`.
 
 ---
 

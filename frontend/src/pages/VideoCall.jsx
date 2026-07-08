@@ -5,6 +5,13 @@ import Peer from "simple-peer";
 import { useAuth } from "../contexts/useAuth.js";
 
 const ENDPOINT = "http://localhost:5001";
+const EMOTION_API = "http://localhost:5006";
+const EMOTION_CAPTURE_INTERVAL_MS = 4000;
+
+const EMOTION_EMOJI = {
+  happy: "😊", sad: "😢", angry: "😠", fear: "😨",
+  surprise: "😲", disgust: "🤢", neutral: "😐",
+};
 
 export default function VideoCall() {
   const { appointmentId } = useParams();
@@ -17,12 +24,15 @@ export default function VideoCall() {
   const [errorMessage, setErrorMessage] = useState(null);
   const [micOn, setMicOn] = useState(true);
   const [camOn, setCamOn] = useState(true);
+  const [remoteEmotion, setRemoteEmotion] = useState(null); // { emotion, confidence }
 
   const localVideoRef = useRef(null);
   const remoteVideoRef = useRef(null);
+  const captureCanvasRef = useRef(null);
   const socketRef = useRef(null);
   const peerRef = useRef(null);
   const localStreamRef = useRef(null);
+  const emotionIntervalRef = useRef(null);
 
   useEffect(() => {
     if (!currentUser) return;
@@ -80,12 +90,52 @@ export default function VideoCall() {
       socket.on("call-peer-left", () => {
         setStatus("ended");
       });
+
+      // The other participant's detected emotion, relayed through the
+      // backend (see server.js's "emotion-update" handler) — this browser
+      // never sends its own frames anywhere except emotion-service directly.
+      socket.on("emotion-update", ({ emotion, confidence }) => {
+        setRemoteEmotion(emotion ? { emotion, confidence } : null);
+      });
+
+      // Periodically capture a local frame and analyze it against
+      // emotion-service. Best-effort: a down/slow emotion-service should
+      // never affect the call itself, so every failure is swallowed.
+      emotionIntervalRef.current = setInterval(async () => {
+        const video = localVideoRef.current;
+        const canvas = captureCanvasRef.current;
+        if (!video || !canvas || video.videoWidth === 0) return;
+        try {
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
+          const dataUrl = canvas.toDataURL("image/jpeg", 0.7);
+
+          const res = await fetch(`${EMOTION_API}/detect`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ image: dataUrl }),
+          });
+          if (!res.ok) return;
+          const result = await res.json();
+          if (result.face_detected && socketRef.current) {
+            socketRef.current.emit("emotion-update", {
+              appointmentId,
+              emotion: result.emotion,
+              confidence: result.confidence,
+            });
+          }
+        } catch (err) {
+          console.warn("Emotion detection unavailable:", err.message);
+        }
+      }, EMOTION_CAPTURE_INTERVAL_MS);
     };
 
     start();
 
     return () => {
       cancelled = true;
+      if (emotionIntervalRef.current) clearInterval(emotionIntervalRef.current);
       localStreamRef.current?.getTracks().forEach((t) => t.stop());
       if (peerRef.current && !peerRef.current.destroyed) peerRef.current.destroy();
       if (socketRef.current) {
@@ -133,6 +183,16 @@ export default function VideoCall() {
           className="w-full h-full object-cover bg-black"
           style={{ minHeight: "70vh" }}
         />
+        {/* Hidden canvas used only to grab local frames for emotion detection */}
+        <canvas ref={captureCanvasRef} className="hidden" />
+
+        {status === "connected" && remoteEmotion && (
+          <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-sm rounded-full px-4 py-2 flex items-center gap-2">
+            <span className="text-xl">{EMOTION_EMOJI[remoteEmotion.emotion] || "🙂"}</span>
+            <span className="text-white text-sm font-medium capitalize">{remoteEmotion.emotion}</span>
+          </div>
+        )}
+
         {status !== "connected" && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/60">
             <div className="text-center px-6">

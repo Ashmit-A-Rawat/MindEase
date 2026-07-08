@@ -168,6 +168,14 @@ io.on("connection", (socket) => {
     socket.leave(room);
   });
 
+  // Emotion detection relay: each participant analyzes their own local
+  // camera frames against emotion-service directly (never through this
+  // backend) and just relays the resulting label to the other participant.
+  socket.on("emotion-update", ({ appointmentId, emotion, confidence }) => {
+    if (!appointmentId) return;
+    socket.to(`call-${appointmentId}`).emit("emotion-update", { emotion, confidence });
+  });
+
   socket.on("disconnecting", () => {
     // Fires *before* socket.io clears socket.rooms (unlike "disconnect"),
     // so the peer on the other side of a call can be notified to tear down.
