@@ -30,7 +30,7 @@ MindEase addresses this gap by providing **confidential**, **culturally relevant
 | 🧠 **Integrated Screening Tools** | PHQ-9, GAD-7, and GHQ-12 tests with progress tracking dashboards. |
 | 🎵 **Music Therapy** | Spotify integration — curated and personal playlists, accessible without leaving the app. |
 | 🗣️ **Multilingual Support** | i18n scaffolding for English, Hindi, Marathi, and Tamil. |
-| 🤖 **AI Support Chat** | Embedded conversational assistant for emotional support and coping strategies (currently a third-party widget — see Roadmap for a custom, safety-gated LLM). |
+| 🤖 **AI Support Chat** | Custom RAG chatbot (Gemini) over a curated mental-health resource library — retrieves relevant coping guidance per message and cites which resource informed the answer. A deterministic keyword safety gate runs before any LLM call: crisis language bypasses retrieval and generation entirely and returns crisis resources directly. |
 | 🎥 **Live Video Counseling** | Peer-to-peer WebRTC video calls between student and counsellor for Online-mode appointments, no third-party video service involved. |
 | 😊 **Real-Time Emotion Detection** | OpenCV + CNN facial emotion classification (7 categories) during live calls — each participant's camera is analyzed locally and the result relayed to the other side, so the counsellor can see the student's emotional state (and vice versa) without either party's video ever leaving their own browser except as periodic frames to the detection service. |
 
@@ -42,6 +42,7 @@ MindEase addresses this gap by providing **confidential**, **culturally relevant
 - **OCR Verification:** Student ID authentication via OpenCV + EasyOCR + fuzzy string matching (`StudentVerification/`).
 - **Emotion Detection:** OpenCV (Haar cascade face detection) + a pretrained CNN (`emotion-service/`, TensorFlow Lite backend via the `fer` package) — 7-class facial emotion classification during live video calls.
 - **Live Video:** WebRTC (`simple-peer`) for peer-to-peer counseling calls, signaled through the existing Socket.io server — no video ever transits the backend, only the SDP/ICE handshake.
+- **AI Support Chat:** Retrieval-augmented generation (`chat-service/`) — Gemini for both embeddings (FAISS vector search over a curated markdown resource library) and generation, with a deterministic crisis-keyword gate that bypasses the LLM entirely when triggered.
 - **Backend Architecture:** Node/Express REST API (`/api1/*`) for auth, appointments, tests, chat, and ML — proxying to the Python ML microservice rather than reimplementing model inference.
 - **Real-time Communication:** Socket.io for chat, WebRTC signaling, and emotion-label relay during calls.
 - **Data Security:** Password hashing (bcrypt), JWT + session auth, HttpOnly cookies.
@@ -58,6 +59,7 @@ MindEase addresses this gap by providing **confidential**, **culturally relevant
 | **OCR Service** | Python / FastAPI, OpenCV, EasyOCR, RapidFuzz |
 | **Emotion Service** | Python / FastAPI, OpenCV, `fer` (CNN via TensorFlow Lite) |
 | **Live Video** | WebRTC, `simple-peer`, Socket.io (signaling) |
+| **AI Support Chat** | Python / FastAPI, Gemini (generation + embeddings), FAISS |
 | **Music Integration** | Spotify Web API (Node/Express proxy) |
 
 ---
@@ -68,7 +70,6 @@ Honesty check for anyone evaluating this repo: the items below appear in earlier
 
 | Item | Status |
 |---|---|
-| **Custom LLM psychological-first-aid chatbot** | Current "AI Support" is a third-party embedded widget, not a custom model. A safety-gated (crisis-keyword override before any model response) RAG chatbot is planned. |
 | **Twilio integration** | Not built — live video uses WebRTC directly instead. |
 | **HIPAA/GDPR formal compliance** | Not something this repo can claim on its own — formal compliance is a legal/regulatory process, not a coding task. A technical hardening pass fixed several concrete gaps a review would flag: session/JWT cookies had an inverted `secure` flag (would have sent auth cookies over plain HTTP in a real production deployment), several endpoints returned full user documents including the password hash to the client, auth endpoints had no rate limiting, `/api1/me` (DELETE) now supports account + core wellness-data erasure. Still open and genuinely unaddressed: encryption at rest (a database/infra decision, not app code), a real audit-logging system for who accessed a student's records, a published privacy policy, and data processing agreements with third-party processors (Cloudinary, Spotify). |
 | **Dedicated TURN server for WebRTC** | Calls now include STUN + a free public TURN fallback (Open Relay Project) so most strict-NAT cases are covered, but that fallback has no uptime/capacity guarantee. For production, set `VITE_TURN_URL`/`VITE_TURN_USERNAME`/`VITE_TURN_CREDENTIAL` (see `.env.example`) to real credentials — self-hosted coturn or a provider (Metered.ca, Twilio, Xirsys). |
@@ -77,15 +78,19 @@ Honesty check for anyone evaluating this repo: the items below appear in earlier
 
 ## 🏃 Running Locally
 
-This repo is six services: main frontend, main backend, an ML microservice, an OCR microservice, an emotion-detection microservice, and a Spotify proxy. See `.env.example` for the full port map and required environment variables — copy the relevant block into each service's own `.env`.
+This repo is seven services: main frontend, main backend, an ML microservice, an OCR microservice, an emotion-detection microservice, a RAG chat microservice, and a Spotify proxy. See `.env.example` for the full port map and required environment variables — copy the relevant block into each service's own `.env`.
 
 ```bash
 # One-time setup
 npm install                 # root dev-orchestration deps (concurrently)
-npm run setup:python        # creates ml-service/, StudentVerification/, and emotion-service/ .venv's
+npm run setup:python        # creates ml-service/, StudentVerification/, emotion-service/, and chat-service/ .venv's
 cd backend && npm install && cd ..
 cd frontend && npm install && cd ..
 cd Spotify && npm install && cd ..
+
+# chat-service also needs a Gemini API key (free at https://aistudio.google.com/apikey)
+# in chat-service/.env as GEMINI_API_KEY=..., then build its retrieval index once:
+npm run build:chat-index
 
 # Start everything together
 npm run dev
