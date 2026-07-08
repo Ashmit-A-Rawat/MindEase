@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import io from "socket.io-client";
 import Peer from "simple-peer";
 import { useAuth } from "../contexts/useAuth.js";
@@ -47,7 +48,8 @@ export default function VideoCall() {
   const { currentUser } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-  const otherPartyName = location.state?.otherPartyName || "the other participant";
+  const { t } = useTranslation();
+  const otherPartyName = location.state?.otherPartyName || t("videoCall.otherParticipant");
 
   const [status, setStatus] = useState("connecting"); // connecting | waiting | connected | ended | error
   const [errorMessage, setErrorMessage] = useState(null);
@@ -74,7 +76,7 @@ export default function VideoCall() {
       } catch (err) {
         console.error("getUserMedia failed:", err);
         setStatus("error");
-        setErrorMessage("Couldn't access your camera/microphone. Check browser permissions and try again.");
+        setErrorMessage(t("videoCall.cameraError"));
         return;
       }
       if (cancelled) {
@@ -109,7 +111,7 @@ export default function VideoCall() {
       peer.on("error", (err) => {
         console.error("Peer error:", err);
         setStatus("error");
-        setErrorMessage("The call connection failed. This can happen across some networks (strict NATs/firewalls) without a TURN server configured.");
+        setErrorMessage(t("videoCall.peerError"));
       });
 
       socket.on("call-signal", ({ signal }) => {
@@ -194,10 +196,10 @@ export default function VideoCall() {
   };
 
   const STATUS_LABEL = {
-    connecting: "Requesting camera/microphone access...",
-    waiting: `Waiting for ${otherPartyName} to join...`,
-    connected: "Connected",
-    ended: "Call ended",
+    connecting: t("videoCall.connecting"),
+    waiting: t("videoCall.waitingFor", { name: otherPartyName }),
+    connected: t("videoCall.connected"),
+    ended: t("videoCall.ended"),
     error: errorMessage,
   };
 
@@ -242,7 +244,7 @@ export default function VideoCall() {
           <video ref={localVideoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
           {!camOn && (
             <div className="absolute inset-0 flex items-center justify-center bg-gray-800 text-white text-xs">
-              Camera off
+              {t("videoCall.cameraOff")}
             </div>
           )}
         </div>
@@ -253,7 +255,7 @@ export default function VideoCall() {
         <button
           onClick={toggleMic}
           className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${micOn ? "bg-gray-600 hover:bg-gray-500" : "bg-red-600 hover:bg-red-700"}`}
-          title={micOn ? "Mute" : "Unmute"}
+          title={micOn ? t("videoCall.mute") : t("videoCall.unmute")}
         >
           {micOn ? (
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -269,7 +271,7 @@ export default function VideoCall() {
         <button
           onClick={toggleCam}
           className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${camOn ? "bg-gray-600 hover:bg-gray-500" : "bg-red-600 hover:bg-red-700"}`}
-          title={camOn ? "Turn off camera" : "Turn on camera"}
+          title={camOn ? t("videoCall.turnOffCamera") : t("videoCall.turnOnCamera")}
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
@@ -283,7 +285,7 @@ export default function VideoCall() {
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ transform: "rotate(135deg)" }}>
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
           </svg>
-          End Call
+          {t("videoCall.endCall")}
         </button>
       </div>
     </div>

@@ -1,14 +1,9 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import axios from "axios";
 
 const CHAT_API = import.meta.env.VITE_CHAT_SERVICE_URL || "http://localhost:5007";
-
-const STARTER_PROMPTS = [
-  "I'm feeling really anxious about my exams",
-  "I've been having trouble sleeping",
-  "How do I deal with academic pressure?",
-];
 
 // The system prompt asks for **bold** and "- " bullets; render just enough
 // markdown to make those readable instead of showing literal asterisks —
@@ -40,6 +35,8 @@ function renderFormattedText(text) {
 }
 
 export default function ChatBot() {
+  const { t, i18n } = useTranslation();
+  const STARTER_PROMPTS = t("chatBot.starterPrompts", { returnObjects: true });
   const [isLoading, setIsLoading] = useState(true);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
@@ -73,6 +70,9 @@ export default function ChatBot() {
         // Only the last few turns — keeps the prompt small and this is a
         // supportive chat, not a long-form document conversation.
         history: newMessages.slice(-6),
+        // Lets the backend ask Gemini to reply in the student's chosen
+        // language instead of translating a fixed response — see main.py.
+        language: i18n.language,
       });
       setMessages((prev) => [
         ...prev,
@@ -80,7 +80,7 @@ export default function ChatBot() {
       ]);
     } catch (err) {
       console.error("Chat error:", err);
-      setError("AI Support is temporarily unavailable. Please try again in a moment, or book a session with a counsellor.");
+      setError(t("chatBot.errorMessage"));
     } finally {
       setSending(false);
     }
@@ -113,7 +113,7 @@ export default function ChatBot() {
                 transition={{ delay: 0.3 }}
                 className="text-gray-600 font-medium"
               >
-                Preparing your AI companion...
+                {t("chatBot.preparingCompanion")}
               </motion.p>
             </div>
           </motion.div>
@@ -126,8 +126,8 @@ export default function ChatBot() {
         transition={{ duration: 0.5 }}
         className="bg-gradient-to-r from-blue-400 to-indigo-500 text-white py-6 md:py-8 text-center rounded-2xl shadow-lg mb-6"
       >
-        <h1 className="text-2xl md:text-3xl font-bold tracking-wide">MindEase AI Companion</h1>
-        <p className="mt-2 text-base md:text-lg opacity-95">Hi! What can I help you with?</p>
+        <h1 className="text-2xl md:text-3xl font-bold tracking-wide">{t("chatBot.title")}</h1>
+        <p className="mt-2 text-base md:text-lg opacity-95">{t("chatBot.subtitle")}</p>
       </motion.header>
 
       <main className="flex-grow flex items-center justify-center mb-6">
@@ -142,7 +142,7 @@ export default function ChatBot() {
             {messages.length === 0 && (
               <div className="h-full flex flex-col items-center justify-center text-center px-6">
                 <div className="text-4xl mb-3">💬</div>
-                <p className="text-gray-500 mb-6">Start a conversation, or try one of these:</p>
+                <p className="text-gray-500 mb-6">{t("chatBot.emptyPrompt")}</p>
                 <div className="flex flex-col gap-2 w-full max-w-sm">
                   {STARTER_PROMPTS.map((p) => (
                     <button
@@ -170,7 +170,7 @@ export default function ChatBot() {
                 >
                   {m.role === "user" ? m.content : renderFormattedText(m.content)}
                   {m.sources?.length > 0 && (
-                    <p className="mt-2 text-xs opacity-60">Related: {m.sources.map((s) => s.replace(".md", "").replace(/-/g, " ")).join(", ")}</p>
+                    <p className="mt-2 text-xs opacity-60">{t("chatBot.relatedLabel")}: {m.sources.map((s) => s.replace(".md", "").replace(/-/g, " ")).join(", ")}</p>
                   )}
                 </div>
               </div>
@@ -196,7 +196,7 @@ export default function ChatBot() {
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Type how you're feeling..."
+              placeholder={t("chatBot.inputPlaceholder")}
               disabled={sending}
               className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 text-sm disabled:opacity-50"
             />
@@ -205,7 +205,7 @@ export default function ChatBot() {
               disabled={sending || !input.trim()}
               className="px-5 py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 transition-colors"
             >
-              Send
+              {t("chatBot.send")}
             </button>
           </form>
         </motion.div>
@@ -217,8 +217,8 @@ export default function ChatBot() {
         transition={{ delay: 0.5, duration: 0.5 }}
         className="text-center text-xs text-gray-500 mt-4"
       >
-        <p>This is supportive AI, not a replacement for professional care.</p>
-        <p className="mt-1">For immediate crisis support, please contact emergency services.</p>
+        <p>{t("chatBot.footerDisclaimer")}</p>
+        <p className="mt-1">{t("chatBot.footerCrisis")}</p>
       </motion.footer>
     </div>
   );

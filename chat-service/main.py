@@ -136,18 +136,60 @@ def is_crisis_message(text: str) -> bool:
     return any(kw in lowered for kw in CRISIS_KEYWORDS)
 
 
-CRISIS_RESPONSE_TEXT = (
-    "I'm really concerned about what you just shared, and I want you to get support that's "
-    "actually equipped to help right now — that's beyond what I can safely do in a chat like this.\n\n"
-    "**Please reach out right now:**\n"
-    "- National Suicide Prevention Lifeline (US): Call or text 988\n"
-    "- Crisis Text Line: Text HOME to 741741\n"
-    "- iCall (India): +91 9152987821\n"
-    "- Vandrevala Foundation Helpline (India): 1860-2662-345 (24/7)\n"
-    "- If you're in immediate danger, please contact local emergency services or go to the nearest emergency room.\n\n"
-    "If you can, please also tell a trusted person near you right now — you don't have to go through this alone. "
-    "You can also book a session with a campus counsellor directly through MindEase."
-)
+# Pre-written per-language, not LLM-generated — the whole point of the
+# crisis gate is a fixed, reliable response that doesn't depend on the LLM
+# (or even the network) being up. Falls back to English for any language
+# not covered here.
+CRISIS_RESPONSE_TEXT = {
+    "en": (
+        "I'm really concerned about what you just shared, and I want you to get support that's "
+        "actually equipped to help right now — that's beyond what I can safely do in a chat like this.\n\n"
+        "**Please reach out right now:**\n"
+        "- National Suicide Prevention Lifeline (US): Call or text 988\n"
+        "- Crisis Text Line: Text HOME to 741741\n"
+        "- iCall (India): +91 9152987821\n"
+        "- Vandrevala Foundation Helpline (India): 1860-2662-345 (24/7)\n"
+        "- If you're in immediate danger, please contact local emergency services or go to the nearest emergency room.\n\n"
+        "If you can, please also tell a trusted person near you right now — you don't have to go through this alone. "
+        "You can also book a session with a campus counsellor directly through MindEase."
+    ),
+    "hi": (
+        "मैंने अभी जो आपने साझा किया उसे लेकर मुझे वाकई चिंता है, और मैं चाहता/चाहती हूँ कि आपको ऐसी सहायता मिले जो "
+        "अभी वास्तव में मदद करने में सक्षम हो — यह इस तरह की चैट में मैं सुरक्षित रूप से जो कर सकता/सकती हूँ उससे कहीं आगे है।\n\n"
+        "**कृपया अभी संपर्क करें:**\n"
+        "- नेशनल सुसाइड प्रिवेंशन लाइफलाइन (US): 988 पर कॉल या टेक्स्ट करें\n"
+        "- क्राइसिस टेक्स्ट लाइन: HOME को 741741 पर टेक्स्ट करें\n"
+        "- iCall (भारत): +91 9152987821\n"
+        "- वंद्रेवाला फाउंडेशन हेल्पलाइन (भारत): 1860-2662-345 (24/7)\n"
+        "- यदि आप तत्काल खतरे में हैं, तो कृपया स्थानीय आपातकालीन सेवाओं से संपर्क करें या निकटतम अस्पताल जाएं।\n\n"
+        "यदि संभव हो, तो कृपया अपने पास किसी विश्वसनीय व्यक्ति को भी अभी बताएं — आपको इससे अकेले नहीं गुज़रना है। "
+        "आप MindEase के माध्यम से सीधे कैंपस काउंसलर के साथ सत्र भी बुक कर सकते हैं।"
+    ),
+    "mr": (
+        "तुम्ही आत्ताच जे शेअर केले त्याबद्दल मला खरोखर काळजी वाटते आहे, आणि मला वाटते की तुम्हाला अशी मदत मिळावी जी "
+        "आत्ता खरोखर मदत करण्यास सक्षम आहे — हे अशा चॅटमध्ये मी सुरक्षितपणे जे करू शकतो त्यापलीकडचे आहे.\n\n"
+        "**कृपया आत्ताच संपर्क साधा:**\n"
+        "- नॅशनल सुसाईड प्रिव्हेन्शन लाइफलाइन (US): 988 वर कॉल किंवा टेक्स्ट करा\n"
+        "- क्रायसिस टेक्स्ट लाइन: HOME 741741 वर टेक्स्ट करा\n"
+        "- iCall (भारत): +91 9152987821\n"
+        "- वंद्रेवाला फाउंडेशन हेल्पलाइन (भारत): 1860-2662-345 (24/7)\n"
+        "- जर तुम्ही तात्काळ धोक्यात असाल, तर कृपया स्थानिक आपत्कालीन सेवांशी संपर्क साधा किंवा जवळच्या रुग्णालयात जा.\n\n"
+        "शक्य असल्यास, कृपया तुमच्या जवळच्या एखाद्या विश्वासू व्यक्तीलाही आत्ताच सांगा — तुम्हाला हे एकट्याने सहन करण्याची गरज नाही. "
+        "तुम्ही MindEase द्वारे थेट कॅम्पस समुपदेशकासोबत सत्रही बुक करू शकता."
+    ),
+    "ta": (
+        "நீங்கள் இப்போது பகிர்ந்ததைப் பற்றி எனக்கு மிகவும் கவலையாக இருக்கிறது, இப்போது உண்மையில் உதவக்கூடிய ஆதரவை நீங்கள் "
+        "பெற வேண்டும் என்று நான் விரும்புகிறேன் — இது இதுபோன்ற அரட்டையில் நான் பாதுகாப்பாகச் செய்யக்கூடியதற்கு அப்பாற்பட்டது.\n\n"
+        "**தயவுசெய்து இப்போதே தொடர்பு கொள்ளுங்கள்:**\n"
+        "- நேஷனல் சூசைட் பிரிவென்ஷன் லைஃப்லைன் (US): 988-க்கு அழைக்கவும் அல்லது குறுஞ்செய்தி அனுப்பவும்\n"
+        "- கிரைசிஸ் டெக்ஸ்ட் லைன்: HOME என்பதை 741741-க்கு குறுஞ்செய்தி அனுப்பவும்\n"
+        "- iCall (இந்தியா): +91 9152987821\n"
+        "- வாண்ட்ரேவாலா அறக்கட்டளை உதவி எண் (இந்தியா): 1860-2662-345 (24/7)\n"
+        "- நீங்கள் உடனடி ஆபத்தில் இருந்தால், உள்ளூர் அவசர சேவைகளைத் தொடர்பு கொள்ளவும் அல்லது அருகிலுள்ள மருத்துவமனைக்குச் செல்லவும்.\n\n"
+        "முடிந்தால், உங்களுக்கு அருகில் இருக்கும் நம்பகமான ஒருவரிடமும் இப்போதே சொல்லுங்கள் — நீங்கள் இதைத் தனியாக சமாளிக்க வேண்டியதில்லை. "
+        "MindEase மூலம் நேரடியாக கேம்பஸ் ஆலோசகருடன் ஒரு அமர்வையும் முன்பதிவு செய்யலாம்."
+    ),
+}
 
 SYSTEM_PROMPT = """You are MindEase's AI Support companion — a warm, non-judgmental psychological \
 first-aid assistant for Indian college students. You are NOT a replacement for therapy or \
@@ -191,17 +233,29 @@ class ChatMessage(BaseModel):
     content: str
 
 
+LANGUAGE_NAMES = {
+    "en": "English",
+    "hi": "Hindi",
+    "mr": "Marathi",
+    "ta": "Tamil",
+}
+
+
 class ChatRequest(BaseModel):
     message: str
     history: Optional[List[ChatMessage]] = []
+    language: Optional[str] = "en"
 
 
 # ------------------ Endpoints ------------------ #
 @app.post("/chat")
 async def chat(data: ChatRequest):
+    language = (data.language or "en").split("-")[0]  # e.g. "en-US" -> "en"
+
     if is_crisis_message(data.message):
         print("🚨 CRISIS KEYWORD MATCHED — bypassing retrieval and LLM entirely")
-        return {"success": True, "response": CRISIS_RESPONSE_TEXT, "is_crisis": True, "sources": []}
+        response_text = CRISIS_RESPONSE_TEXT.get(language, CRISIS_RESPONSE_TEXT["en"])
+        return {"success": True, "response": response_text, "is_crisis": True, "sources": []}
 
     if not CHAT_MODEL:
         raise HTTPException(status_code=503, detail="Chat service not configured (missing GEMINI_API_KEY or no working model found)")
@@ -213,9 +267,23 @@ async def chat(data: ChatRequest):
 
         history_text = "\n".join(f"{m.role}: {m.content}" for m in (data.history or [])[-6:])
 
-        prompt = f"""{SYSTEM_PROMPT}
+        language_name = LANGUAGE_NAMES.get(language, "English")
 
-Relevant context from MindEase's resource library:
+        # The language directive lives in systemInstruction rather than the
+        # user-turn text — Gemini weights systemInstruction more heavily, and
+        # a plain-text reminder buried in the prompt body was unreliable for
+        # lower-resource languages (Marathi in particular kept slipping back
+        # to English even when told explicitly).
+        system_instruction = SYSTEM_PROMPT
+        if language != "en":
+            system_instruction += (
+                f"\n\nCRITICAL: You must write your ENTIRE reply in {language_name} ({language}) — "
+                f"every sentence, no English mixed in — because that is this student's selected app "
+                f"language. The only exception: if the student's own message is written in a different "
+                f"language, match theirs instead of {language_name}."
+            )
+
+        prompt = f"""Relevant context from MindEase's resource library:
 {context_text if context_text else "(no specific matching resource — answer from general supportive knowledge)"}
 
 Recent conversation:
@@ -225,7 +293,15 @@ Student's message: {data.message}
 
 Respond as MindEase's AI Support companion:"""
 
-        result = gemini_post(CHAT_MODEL, "generateContent", {"contents": [{"parts": [{"text": prompt}]}]}, timeout=30)
+        result = gemini_post(
+            CHAT_MODEL,
+            "generateContent",
+            {
+                "systemInstruction": {"parts": [{"text": system_instruction}]},
+                "contents": [{"role": "user", "parts": [{"text": prompt}]}],
+            },
+            timeout=30,
+        )
         response_text = result["candidates"][0]["content"]["parts"][0]["text"]
 
         return {"success": True, "response": response_text, "is_crisis": False, "sources": sources}
