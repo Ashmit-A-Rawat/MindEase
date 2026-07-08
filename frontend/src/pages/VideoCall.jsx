@@ -8,6 +8,34 @@ const ENDPOINT = "http://localhost:5001";
 const EMOTION_API = "http://localhost:5006";
 const EMOTION_CAPTURE_INTERVAL_MS = 4000;
 
+// STUN alone (the previous setup) only helps peers discover their public
+// IP/port — it does nothing when a NAT won't allow direct inbound traffic
+// at all (common on strict/symmetric NATs, some corporate networks). TURN
+// relays the actual media through a third-party server as a fallback, at
+// the cost of that server needing bandwidth for every such call.
+//
+// Real, dedicated TURN credentials (self-hosted coturn, or a provider like
+// Metered.ca/Twilio/Xirsys) should be set via VITE_TURN_URL/VITE_TURN_USERNAME/
+// VITE_TURN_CREDENTIAL — see .env.example. The Open Relay Project entries
+// below are a free public fallback; unverified/best-effort (no uptime
+// guarantee), but harmless to include even if unreachable — WebRTC's ICE
+// gathering just skips candidates that don't respond, it doesn't fail the
+// whole connection because one candidate is bad.
+const ICE_SERVERS = [
+  { urls: "stun:stun.l.google.com:19302" },
+  ...(import.meta.env.VITE_TURN_URL
+    ? [{
+        urls: import.meta.env.VITE_TURN_URL,
+        username: import.meta.env.VITE_TURN_USERNAME,
+        credential: import.meta.env.VITE_TURN_CREDENTIAL,
+      }]
+    : []),
+  { urls: "stun:openrelay.metered.ca:80" },
+  { urls: "turn:openrelay.metered.ca:80", username: "openrelayproject", credential: "openrelayproject" },
+  { urls: "turn:openrelay.metered.ca:443", username: "openrelayproject", credential: "openrelayproject" },
+  { urls: "turn:openrelay.metered.ca:443?transport=tcp", username: "openrelayproject", credential: "openrelayproject" },
+];
+
 const EMOTION_EMOJI = {
   happy: "😊", sad: "😢", angry: "😠", fear: "😨",
   surprise: "😲", disgust: "🤢", neutral: "😐",
@@ -64,7 +92,7 @@ export default function VideoCall() {
       // Deterministic initiator: avoids a race over who starts the SDP
       // offer, since both sides mount and join around the same time.
       const initiator = currentUser.role === "student";
-      const peer = new Peer({ initiator, trickle: true, stream });
+      const peer = new Peer({ initiator, trickle: true, stream, config: { iceServers: ICE_SERVERS } });
       peerRef.current = peer;
 
       peer.on("signal", (signal) => {

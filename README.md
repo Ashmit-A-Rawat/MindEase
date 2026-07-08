@@ -71,7 +71,7 @@ Honesty check for anyone evaluating this repo: the items below appear in earlier
 | **Custom LLM psychological-first-aid chatbot** | Current "AI Support" is a third-party embedded widget, not a custom model. A safety-gated (crisis-keyword override before any model response) RAG chatbot is planned. |
 | **Twilio integration** | Not built — live video uses WebRTC directly instead. |
 | **HIPAA/GDPR formal compliance** | Architecture follows good-practice patterns (hashed passwords, JWT, HttpOnly cookies) but has not undergone formal compliance review. |
-| **TURN server for WebRTC** | Calls currently rely on STUN only; participants on strict/symmetric NATs (common on some corporate or campus networks) may fail to connect peer-to-peer without one. |
+| **Dedicated TURN server for WebRTC** | Calls now include STUN + a free public TURN fallback (Open Relay Project) so most strict-NAT cases are covered, but that fallback has no uptime/capacity guarantee. For production, set `VITE_TURN_URL`/`VITE_TURN_USERNAME`/`VITE_TURN_CREDENTIAL` (see `.env.example`) to real credentials — self-hosted coturn or a provider (Metered.ca, Twilio, Xirsys). |
 
 ---
 
