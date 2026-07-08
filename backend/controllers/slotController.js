@@ -3,9 +3,13 @@ import Slot from "../models/Slot.js";
 // Create Slot
 export const createSlot = async (req, res) => {
   try {
-    const obj = req.body ? 
+    // fullName is only ever set via Google OAuth signup — local email/password
+    // signup leaves it unset, which used to make counsellorName undefined and
+    // fail Slot's required-field validation, silently breaking slot creation
+    // for any counsellor who didn't sign up with Google.
+    const obj = req.body ?
     {...req.body,
-      counsellorName: req.user.fullName,
+      counsellorName: req.user.fullName || req.user.username,
       counsellorEmail: req.user.email} : null;
     const slot = new Slot(obj);
     await slot.save();
