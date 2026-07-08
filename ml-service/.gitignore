@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Real student data exported by backend/scripts/exportTrainingData.js —
+# never commit this, unlike student_depression.csv (the public Kaggle
+# bootstrap dataset, which is intentionally tracked).
+mindease_export.csv
