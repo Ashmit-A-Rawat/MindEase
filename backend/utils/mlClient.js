@@ -67,8 +67,7 @@ export async function buildResponsesArray(studentId) {
 }
 
 // Thin axios wrapper — never throws, always resolves to { ok, data|error } so
-// callers can degrade gracefully when the ML service is down (same pattern as
-// the ECONNREFUSED fallback in mental-health-app/backend/server.js).
+// callers can degrade gracefully when the ML service is down.
 export async function callMlService(method, path, data) {
   try {
     const res = await axios({ method, url: `${ML_SERVICE_URL}${path}`, data, timeout: 8000 });

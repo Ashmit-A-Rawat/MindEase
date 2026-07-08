@@ -22,25 +22,25 @@ MindEase addresses this gap by providing **confidential**, **culturally relevant
 
 | Category | Description |
 |-----------|-------------|
-| 🧩 **AI Psychological First Aid** | LLM-powered chatbot for crisis response, emotional support, and coping strategies. |
+| 🩺 **AI Risk Assessment** | Random Forest + Logistic Regression risk classifier, a Decision Tree Regressor for a continuous 0-100 wellness score, and per-student trend detection (Linear Regression) across repeated PHQ-9/GAD-7/GHQ-12 attempts. |
+| 🧭 **Population-Level BI Dashboard** | K-Means clustering segments students into risk profiles; Apriori-mined association rules surface which risk-factor combinations most strongly predict elevated risk — both surfaced on the counsellor dashboard. |
 | 🔒 **Confidential Booking** | Anonymous and secure scheduling for on-campus counselors and helplines. |
-| 🌐 **Regional Resource Hub** | Videos, articles, and podcasts in multiple Indian languages. |
-| 💬 **Moderated Peer Support** | Safe, anonymous discussion forums with AI moderation and trained volunteers. |
+| 🎫 **OCR Student Verification** | ID-card verification via OpenCV + EasyOCR + fuzzy matching, preserving anonymity elsewhere in the app. |
+| 💬 **Moderated Peer Support** | Real-time one-to-one and group chat (Socket.io) between students, counsellors, and peers. |
 | 🧠 **Integrated Screening Tools** | PHQ-9, GAD-7, and GHQ-12 tests with progress tracking dashboards. |
-| 🗣️ **Multilingual Support** | Supports English, Hindi, Marathi, Tamil, and other regional languages. |
-| 🎥 **Live Counselor Sessions** | Secure WebRTC-based video/audio counseling sessions. |
+| 🎵 **Music Therapy** | Spotify integration — curated and personal playlists, accessible without leaving the app. |
+| 🗣️ **Multilingual Support** | i18n scaffolding for English, Hindi, Marathi, and Tamil. |
+| 🤖 **AI Support Chat** | Embedded conversational assistant for emotional support and coping strategies (currently a third-party widget — see Roadmap for a custom, safety-gated LLM). |
 
 ---
 
 ## 🧠 Technical Approach  
 
-- **Machine Learning Models:** Logistic Regression & Random Forest for early risk prediction.  
-- **Emotion Detection:** OpenCV + CNN to analyze real-time emotions during live sessions.  
-- **AI Chatbot:** Large Language Model (LLM) trained for psychological first aid and conversation flow.  
-- **OCR Verification:** Secure student ID authentication while preserving anonymity.  
-- **WebRTC Integration:** Enables confidential live video counseling.  
-- **Backend Architecture:** Modular RESTful APIs for AI, counseling, and analytics modules.  
-- **Data Security:** Encryption, secure authentication, and compliance with mental health data regulations.
+- **Machine Learning Models:** Logistic Regression, Random Forest, Decision Tree Regression, K-Means clustering, and Apriori association rule mining — trained on a public student depression dataset, served via a dedicated FastAPI ML microservice (`ml-service/`). See `ml-service/SCHEMA_MAPPING.md` for exactly which inputs drive which model.
+- **OCR Verification:** Student ID authentication via OpenCV + EasyOCR + fuzzy string matching (`StudentVerification/`).
+- **Backend Architecture:** Node/Express REST API (`/api1/*`) for auth, appointments, tests, chat, and ML — proxying to the Python ML microservice rather than reimplementing model inference.
+- **Real-time Communication:** Socket.io for one-to-one and group peer/counsellor chat.
+- **Data Security:** Password hashing (bcrypt), JWT + session auth, HttpOnly cookies.
 
 ---
 
@@ -48,11 +48,45 @@ MindEase addresses this gap by providing **confidential**, **culturally relevant
 
 | Layer | Technology |
 |--------|-------------|
-| **Frontend** | React.js / Flutter |
-| **Backend** | Python (FastAPI / Flask) |
-| **Database** | MongoDB / PostgreSQL |
-| **AI/ML** | TensorFlow, scikit-learn, OpenCV |
-| **Real-time Communication** | WebRTC, Twilio APIs |
+| **Frontend** | React (Vite), Tailwind CSS, react-i18next, Recharts |
+| **Main Backend** | Node.js / Express, MongoDB (Mongoose), Socket.io, Passport (Google OAuth) |
+| **ML Service** | Python / FastAPI, scikit-learn, pandas, mlxtend (Apriori) |
+| **OCR Service** | Python / FastAPI, OpenCV, EasyOCR, RapidFuzz |
+| **Music Integration** | Spotify Web API (Node/Express proxy) |
+
+---
+
+## 🚧 Roadmap — Not Yet Implemented
+
+Honesty check for anyone evaluating this repo: the items below appear in earlier problem-statement framing but are not built yet. They're genuine future work, not shipped features.
+
+| Item | Status |
+|---|---|
+| **Live WebRTC video/audio counseling** | Not built. Appointments currently support scheduling and chat, not live video. |
+| **Real-time emotion detection (OpenCV + CNN)** | Not built. |
+| **Custom LLM psychological-first-aid chatbot** | Current "AI Support" is a third-party embedded widget, not a custom model. A safety-gated (crisis-keyword override before any model response) RAG chatbot is planned. |
+| **Twilio integration** | Not built. |
+| **HIPAA/GDPR formal compliance** | Architecture follows good-practice patterns (hashed passwords, JWT, HttpOnly cookies) but has not undergone formal compliance review. |
+
+---
+
+## 🏃 Running Locally
+
+This repo is five services: main frontend, main backend, an ML microservice, an OCR microservice, and a Spotify proxy. See `.env.example` for the full port map and required environment variables — copy the relevant block into each service's own `.env`.
+
+```bash
+# One-time setup
+npm install                 # root dev-orchestration deps (concurrently)
+npm run setup:python        # creates ml-service/.venv and StudentVerification/.venv
+cd backend && npm install && cd ..
+cd frontend && npm install && cd ..
+cd Spotify && npm install && cd ..
+
+# Start everything together
+npm run dev
+```
+
+`StudentVerification` requires Python ≥3.11 (`networkx` pin) — `setup:python` invokes `python3.11` explicitly for it. `ml-service` works with the default `python3`.
 
 ---
 

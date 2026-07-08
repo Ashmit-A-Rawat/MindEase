@@ -24,6 +24,7 @@ import StudentForm from "./pages/StudentForm.jsx";
 import ChatProvider from "./components/chat/Context/ChatProvider.jsx";
 import DashboardHome from "./pages/student/DashboardHome.jsx";
 import WellnessIntake from "./pages/student/WellnessIntake.jsx";
+import MusicTherapy from "./pages/student/MusicTherapy.jsx";
 import './lib/i18n';
 
 
@@ -78,6 +79,7 @@ function App() {
           <Route path="reports" element={<MyReports />} />
           <Route path="reports/:testId" element={<TestReportView />} />
           <Route path="wellness-intake" element={<WellnessIntake />} />
+          <Route path="music-therapy" element={<MusicTherapy />} />
         </Route>
 
         {/* Counsellor Routes */}

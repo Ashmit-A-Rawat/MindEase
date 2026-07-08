@@ -258,7 +258,7 @@ export function SidebarDemo({ role = "student", id }) {
     { label: "Reports", href: `/student/${id}/reports`, icon: <Svg.Chart /> },
     { label: "Wellness Profile", href: `/student/${id}/wellness-intake`, icon: <Svg.Heart /> },
     { label: "Resources", href: `/${role}/${id}/resources`, icon: <Svg.Book /> },
-    { label: "Music Therapy", href: "http://127.0.0.1:5174", external: true, icon: <IconChartLine className="h-5 w-5 shrink-0" /> }
+    { label: "Music Therapy", href: `/student/${id}/music-therapy`, icon: <IconChartLine className="h-5 w-5 shrink-0" /> }
   ];
 
   const counsellorLinks = [

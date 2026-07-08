@@ -1,14 +1,18 @@
 // src/pages/Home.jsx
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useTranslation } from 'react-i18next';
+import axios from "axios";
+
+const SPOTIFY_API = "http://localhost:5005";
 
 // Register ScrollTrigger plugin
 gsap.registerPlugin(ScrollTrigger);
 
 const Home = () => {
+  const navigate = useNavigate();
   const containerRef = useRef(null);
   const titleRef = useRef(null);
   const subtitleRef = useRef(null);
@@ -35,6 +39,33 @@ const Home = () => {
     i18n.changeLanguage(lng);
     setLanguageMenuOpen(false);
   };
+
+  // Spotify's registered OAuth redirect URI points here (the frontend root),
+  // not at the Music Therapy page itself — Spotify apps require a fixed,
+  // pre-registered redirect URI. Catch the ?code= here, exchange it, then
+  // send the user back wherever they started the connect flow from.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get("code");
+    if (!code) return;
+
+    window.history.replaceState({}, document.title, window.location.pathname);
+
+    axios
+      .post(`${SPOTIFY_API}/api/token`, { code })
+      .then(({ data }) => {
+        if (data.access_token) {
+          localStorage.setItem("spotify_token", data.access_token);
+          if (data.refresh_token) localStorage.setItem("spotify_refresh_token", data.refresh_token);
+        }
+      })
+      .catch((err) => console.error("Spotify token exchange failed:", err))
+      .finally(() => {
+        const returnPath = localStorage.getItem("spotify_return_path");
+        localStorage.removeItem("spotify_return_path");
+        if (returnPath) navigate(returnPath);
+      });
+  }, [navigate]);
 
   useEffect(() => {
     // Close modal when clicking outside
