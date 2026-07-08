@@ -167,6 +167,26 @@ export default function DashboardHome() {
   
   const [recentTests, setRecentTests] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Wellness Profile onboarding nudge — null while unknown, false once we've
+  // confirmed no WellnessIntake exists yet for this student. Without it, every
+  // ML risk prediction runs on defaults (see ml-service/SCHEMA_MAPPING.md).
+  const [hasWellnessProfile, setHasWellnessProfile] = useState(null);
+  const [wellnessBannerDismissed, setWellnessBannerDismissed] = useState(
+    () => sessionStorage.getItem(`wellnessBannerDismissed_${studentId}`) === "true"
+  );
+
+  useEffect(() => {
+    if (!studentId) return;
+    api.get(`/wellness/${studentId}`)
+      .then((res) => setHasWellnessProfile(!!res.data))
+      .catch(() => setHasWellnessProfile(null));
+  }, [studentId]);
+
+  const dismissWellnessBanner = () => {
+    sessionStorage.setItem(`wellnessBannerDismissed_${studentId}`, "true");
+    setWellnessBannerDismissed(true);
+  };
   
   // Appointments state
   const [appointments, setAppointments] = useState([]);
@@ -345,7 +365,43 @@ export default function DashboardHome() {
           onSubmit={handleMoodSubmit}
           t={t}
         />
-        
+
+        {/* Wellness Profile onboarding nudge */}
+        {hasWellnessProfile === false && !wellnessBannerDismissed && (
+          <div className="dashboard-card mb-8 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl shadow-lg p-6 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 shrink-0 bg-white/20 rounded-full flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.8 8.6c0 6-8.8 10.4-8.8 10.4S3.2 14.6 3.2 8.6a4.4 4.4 0 0 1 7.6-3.1l1.2 1.3 1.2-1.3a4.4 4.4 0 0 1 7.6 3.1z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-white font-semibold">Complete your Wellness Profile</h3>
+                <p className="text-indigo-100 text-sm mt-1">
+                  Your test scores alone don't tell the full story. A 2-minute profile (sleep, academic
+                  pressure, CGPA, etc.) makes every risk assessment and wellness score you see actually
+                  personalized to you, instead of a generic estimate.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 shrink-0">
+              <button
+                onClick={() => navigate(`/student/${studentId}/wellness-intake`)}
+                className="px-5 py-2.5 bg-white text-indigo-600 font-medium rounded-lg hover:bg-indigo-50 transition-colors whitespace-nowrap"
+              >
+                Complete Profile
+              </button>
+              <button
+                onClick={dismissWellnessBanner}
+                className="text-indigo-100 hover:text-white text-sm"
+                aria-label="Dismiss"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Key Metrics Section */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {/* Recent Mood Card */}
