@@ -356,7 +356,10 @@ def get_next_steps(risk_level):
 async def predict(data: StudentData):
     try:
         print(f"\n=== NEW PREDICTION REQUEST ===")
-        print(f"Received {len(data.responses)} responses: {data.responses}")
+        # Deliberately not logging the raw responses — they include mental
+        # health assessment data (academic pressure, sleep, financial stress,
+        # suicidal-thoughts flag) that shouldn't end up in log files.
+        print(f"Received {len(data.responses)} responses")
         
         # CRITICAL SAFETY CHECK: Check for suicidal thoughts first
         suicidal_thoughts = False

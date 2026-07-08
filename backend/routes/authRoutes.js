@@ -1,13 +1,17 @@
 import express from "express";
 import {protectRoute} from "../middelware/auth.middleware.js";
+import {authLimiter} from "../middelware/rateLimit.js";
 import {signup,login,logout} from "../controllers/auth.controller.js";
 import passport from "passport";
 import jwt from "jsonwebtoken";
+import User from "../models/User.js";
+import WellnessIntake from "../models/WellnessIntake.js";
+import TestResult from "../models/TestResult.js";
 const router = express.Router();
 
 
-router.post("/signup", signup);
-router.post("/login", login);
+router.post("/signup", authLimiter, signup);
+router.post("/login", authLimiter, login);
 router.post("/logout", logout);
 
 //router.get("/user", (req, res) => {
@@ -59,6 +63,27 @@ router.get("/logout",(req,res)=>{
 //check if user is logged in or not
 router.get("/me", protectRoute, (req,res) => {
   res.status(200).json({success: true, user: req.user, token: req.token});
+});
+
+// GDPR right-to-erasure: deletes the account plus the core mental-health
+// data tied to it (wellness profile, test results). Does NOT touch
+// Appointment/Chat/Message records — those involve other people (a
+// counsellor's side of an appointment, the other participant in a chat)
+// and need a real design decision about what "erasure" means for shared
+// records, not a blanket delete bolted on here.
+router.delete("/me", protectRoute, async (req, res) => {
+  try {
+    const userId = req.user._id;
+    await Promise.all([
+      WellnessIntake.deleteMany({ studentId: userId }),
+      TestResult.deleteMany({ studentId: userId }),
+    ]);
+    await User.findByIdAndDelete(userId);
+    res.clearCookie("jwt");
+    res.status(200).json({ success: true, message: "Account and associated wellness data deleted" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
 });
 
 export default router;

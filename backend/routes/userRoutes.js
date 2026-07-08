@@ -11,7 +11,7 @@ const router = express.Router();
 
 // Get all students
 router.get("/students", async (req, res) => {
-  const students = await User.find({ role: "student" });
+  const students = await User.find({ role: "student" }).select("-password");
   res.json(students);
 });
 

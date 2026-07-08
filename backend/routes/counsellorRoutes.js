@@ -5,7 +5,7 @@ const router = express.Router();
 // Get counsellor by ID
 router.get("/:counsellorId", async (req, res) => {
   try {
-    const counsellor = await User.findById(req.params.counsellorId);
+    const counsellor = await User.findById(req.params.counsellorId).select("-password");
     if (!counsellor || counsellor.role !== "counsellor") {
       return res.status(404).json({ message: "Counsellor not found" });
     }

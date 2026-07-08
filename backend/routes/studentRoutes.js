@@ -4,7 +4,7 @@ const router = express.Router();
 
 router.get("/:studentId", async (req, res) => {
   try {
-    const student = await User.findById(req.params.studentId);
+    const student = await User.findById(req.params.studentId).select("-password");
     if (!student || student.role !== "student") {
       return res.status(404).json({ message: "Student not found" });
     }

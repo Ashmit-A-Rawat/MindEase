@@ -44,12 +44,15 @@ export const signup = async (req, res) => {
 
     res.cookie("jwt", token, {
       httpOnly: true,
-      secure: false,   // true in production
+      secure: process.env.NODE_ENV === "production",
       sameSite: "lax", // or "none" for cross-site
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    return res.status(201).json({ message: "User created", token, user });
+    const safeUser = user.toObject();
+    delete safeUser.password;
+
+    return res.status(201).json({ message: "User created", token, user: safeUser });
   } catch (err) {
     return res.status(500).json({ message: err.message });
   }
@@ -79,15 +82,18 @@ export const login = async (req, res) => {
 
     res.cookie("jwt", token, {
       httpOnly: true,
-      secure: false,         // true only in production (HTTPS)
+      secure: process.env.NODE_ENV === "production",
       sameSite: "lax",       // or "none" if frontend and backend are on different domains
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
+    const safeUser = user.toObject();
+    delete safeUser.password;
+
     return res.status(200).json({
       message: "Login successful",
       token : token,
-      user: user,
+      user: safeUser,
     });
   } catch (err) {
     return res.status(500).json({ message: err.message });

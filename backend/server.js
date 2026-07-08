@@ -58,7 +58,10 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 
-// Session: dev-friendly (secure=false in dev)
+// Session: secure cookie in production only (HTTP-only in dev is fine —
+// there's no TLS to require). This was previously inverted
+// (`NODE_ENV === "development"`), meaning a real production deployment
+// would have sent the session cookie over plain HTTP.
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "dev-secret",
@@ -71,7 +74,7 @@ app.use(
     cookie: {
       maxAge: 1000 * 60 * 60,
       httpOnly: true,
-      secure: process.env.NODE_ENV === "development", // false in dev
+      secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
     },
     rolling: true,
