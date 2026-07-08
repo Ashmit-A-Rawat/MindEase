@@ -358,6 +358,7 @@ export default function MyAppointments() {
                 actionLabel={
                   appt.status === "Pending" ? "Mark Completed" : null
                 }
+                otherPartyName={appt.counsellorName}
               />
             </div>
           ))}

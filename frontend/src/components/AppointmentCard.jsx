@@ -1,6 +1,8 @@
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
-export default function AppointmentCard({ appointment, onAction, actionLabel }) {
+export default function AppointmentCard({ appointment, onAction, actionLabel, otherPartyName }) {
+  const navigate = useNavigate();
   const getStatusColor = (status) => {
     switch (status) {
       case 'Completed':
@@ -54,12 +56,26 @@ export default function AppointmentCard({ appointment, onAction, actionLabel }) 
         </div>
       </div>
       
+      {appointment.mode === "Online" && appointment.status !== "Completed" && appointment.status !== "Cancelled" && (
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={() => navigate(`/call/${appointment._id}`, { state: { otherPartyName } })}
+          className="w-full mt-4 bg-indigo-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+          </svg>
+          Start Video Call
+        </motion.button>
+      )}
+
       {actionLabel && (
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           onClick={() => onAction(appointment)}
-          className="w-full mt-4 bg-red-50 text-red-600 py-2 px-4 rounded-lg text-sm font-medium hover:bg-red-100 transition-colors"
+          className="w-full mt-2 bg-red-50 text-red-600 py-2 px-4 rounded-lg text-sm font-medium hover:bg-red-100 transition-colors"
         >
           {actionLabel}
         </motion.button>

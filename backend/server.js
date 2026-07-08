@@ -145,6 +145,37 @@ io.on("connection", (socket) => {
     });
   });
 
+  // WebRTC signaling relay for live counseling calls. The room is the
+  // appointment ID — both participants join it, then exchange opaque
+  // simple-peer signal blobs through the server without it inspecting them.
+  // No media ever touches the backend; it only relays SDP/ICE handshake data.
+  socket.on("join-call", (appointmentId) => {
+    if (!appointmentId) return;
+    const room = `call-${appointmentId}`;
+    socket.join(room);
+    socket.to(room).emit("call-peer-joined");
+  });
+
+  socket.on("call-signal", ({ appointmentId, signal }) => {
+    if (!appointmentId) return;
+    socket.to(`call-${appointmentId}`).emit("call-signal", { signal });
+  });
+
+  socket.on("leave-call", (appointmentId) => {
+    if (!appointmentId) return;
+    const room = `call-${appointmentId}`;
+    socket.to(room).emit("call-peer-left");
+    socket.leave(room);
+  });
+
+  socket.on("disconnecting", () => {
+    // Fires *before* socket.io clears socket.rooms (unlike "disconnect"),
+    // so the peer on the other side of a call can be notified to tear down.
+    for (const room of socket.rooms) {
+      if (room.startsWith("call-")) socket.to(room).emit("call-peer-left");
+    }
+  });
+
   socket.on("disconnect", () => {
     console.log("Socket disconnected:", socket.id);
   });

@@ -25,6 +25,7 @@ import ChatProvider from "./components/chat/Context/ChatProvider.jsx";
 import DashboardHome from "./pages/student/DashboardHome.jsx";
 import WellnessIntake from "./pages/student/WellnessIntake.jsx";
 import MusicTherapy from "./pages/student/MusicTherapy.jsx";
+import VideoCall from "./pages/VideoCall.jsx";
 import './lib/i18n';
 
 
@@ -93,6 +94,9 @@ function App() {
         </Route>
 
         
+        {/* Video call — full-screen, outside the dashboard layout on purpose */}
+        <Route path="/call/:appointmentId" element={<VideoCall />} />
+
         {/* Default Routes */}
         <Route path="/" element={<Home/>} />
         

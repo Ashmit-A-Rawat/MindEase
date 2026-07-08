@@ -36,6 +36,7 @@
     "react-router-dom": "^7.9.0",
     "react-scrollable-feed": "^2.0.3",
     "recharts": "^3.2.0",
+    "simple-peer": "^9.11.1",
     "socket.io-client": "^4.8.1",
     "styled-components": "^6.1.19",
     "tabler": "^1.0.0",
@@ -51,6 +52,7 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^16.3.0",
-    "vite": "^7.1.2"
+    "vite": "^7.1.2",
+    "vite-plugin-node-polyfills": "^0.28.0"
   }
 }
