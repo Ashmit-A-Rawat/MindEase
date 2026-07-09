@@ -45,13 +45,16 @@ EMBED_MODEL = "models/gemini-embedding-001"
 # lock onto the first one that responds. GEMINI_CHAT_MODEL (if set) is tried
 # first, ahead of all of these.
 CHAT_MODEL_CANDIDATES = [
-    "models/gemini-2.5-flash",
-    "models/gemini-2.5-pro",
+    "models/gemini-flash-lite-latest",
+    "models/gemini-3-flash-preview",
+    "models/gemini-3.1-flash-lite",
+    "models/gemini-3.5-flash",
     "models/gemini-2.0-flash",
     "models/gemini-2.0-flash-001",
     "models/gemini-2.0-flash-lite",
-    "models/gemini-flash-latest",
+    "models/gemini-2.0-flash-lite-001",
     "models/gemini-pro-latest",
+    "models/gemini-3-pro-preview",
 ]
 
 if not GEMINI_API_KEY:
