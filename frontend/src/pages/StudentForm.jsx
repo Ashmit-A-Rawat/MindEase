@@ -91,7 +91,10 @@ const StudentForm = () => {
     try {
       setLoading(true);
 
-      const fastRes = await axios.post(FASTAPI_VERIFY_URL, payload);
+      // OCR + face-matching on the ID card is genuinely slow (measured up to
+      // ~75s on CPU) — no timeout here previously meant a slow-but-working
+      // request looked identical to a hung one, with no feedback either way.
+      const fastRes = await axios.post(FASTAPI_VERIFY_URL, payload, { timeout: 120000 });
 
       if (!fastRes?.data) {
         throw new Error("No response from verification service");
@@ -265,7 +268,7 @@ const StudentForm = () => {
           </div>
 
           <button type="submit" disabled={loading} className={`w-full py-2 rounded-lg ${loading ? "bg-gray-400 text-white" : "bg-blue-600 text-white hover:bg-blue-700"}`}>
-            {loading ? "Submitting verification..." : "Submit"}
+            {loading ? "Analyzing your ID card — this can take up to a minute..." : "Submit"}
           </button>
         </form>
       </div>

@@ -90,29 +90,51 @@ export default function VideoCall() {
 
       const socket = io(ENDPOINT);
       socketRef.current = socket;
-      socket.emit("join-call", appointmentId);
 
       // Deterministic initiator: avoids a race over who starts the SDP
       // offer, since both sides mount and join around the same time.
       const initiator = currentUser.role === "student";
-      const peer = new Peer({ initiator, trickle: true, stream, config: { iceServers: ICE_SERVERS } });
-      peerRef.current = peer;
 
-      peer.on("signal", (signal) => {
-        socket.emit("call-signal", { appointmentId, signal });
+      const createPeer = () => {
+        if (peerRef.current) return;
+        const peer = new Peer({ initiator, trickle: true, stream, config: { iceServers: ICE_SERVERS } });
+        peerRef.current = peer;
+
+        peer.on("signal", (signal) => {
+          socket.emit("call-signal", { appointmentId, signal });
+        });
+
+        peer.on("stream", (remoteStream) => {
+          if (remoteVideoRef.current) remoteVideoRef.current.srcObject = remoteStream;
+          setStatus("connected");
+        });
+
+        peer.on("close", () => setStatus("ended"));
+        peer.on("error", (err) => {
+          console.error("Peer error:", err);
+          setStatus("error");
+          setErrorMessage(t("videoCall.peerError"));
+        });
+      };
+
+      // The non-initiator's Peer does nothing until it receives a signal, so
+      // it's safe to create right away. The initiator, though, starts
+      // broadcasting its SDP offer the instant it's created — if the other
+      // side hasn't joined the socket room yet, that broadcast reaches an
+      // empty room and is lost for good (socket.io doesn't buffer "to room"
+      // emits), leaving both sides stuck on "waiting" forever. So the
+      // initiator waits for confirmation the other party is actually there.
+      if (!initiator) createPeer();
+
+      socket.on("call-room-status", ({ peerPresent }) => {
+        if (initiator && peerPresent) createPeer();
       });
 
-      peer.on("stream", (remoteStream) => {
-        if (remoteVideoRef.current) remoteVideoRef.current.srcObject = remoteStream;
-        setStatus("connected");
+      socket.on("call-peer-joined", () => {
+        if (initiator) createPeer();
       });
 
-      peer.on("close", () => setStatus("ended"));
-      peer.on("error", (err) => {
-        console.error("Peer error:", err);
-        setStatus("error");
-        setErrorMessage(t("videoCall.peerError"));
-      });
+      socket.emit("join-call", appointmentId);
 
       socket.on("call-signal", ({ signal }) => {
         if (peerRef.current && !peerRef.current.destroyed) peerRef.current.signal(signal);
@@ -154,6 +176,7 @@ export default function VideoCall() {
               appointmentId,
               emotion: result.emotion,
               confidence: result.confidence,
+              role: currentUser.role,
             });
           }
         } catch (err) {

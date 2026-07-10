@@ -21,7 +21,11 @@ export const bookAppointment = async (req, res) => {
     await slot.save();
 
     const appointment = new Appointment({
-      studentName: student.fullName,
+      // fullName is only ever set via Google OAuth signup — local
+      // email/password students never have it, which used to fail
+      // Appointment's required-field validation on booking. Same fix
+      // already applied to slotController.js's counsellorName.
+      studentName: student.fullName || student.username,
       studentEmail: student.email,
       counsellorName: slot.counsellorName,
       counsellorEmail: slot.counsellorEmail,
@@ -33,10 +37,18 @@ export const bookAppointment = async (req, res) => {
     });
     await appointment.save();
 
-    await sendEmail({
-      to: student.email,
-      subject: "Your Appointment is Confirmed",
-      text: `Hi ${student.fullName},
+    // Confirmation emails are a best-effort side effect, not part of the
+    // booking transaction — the slot and appointment are already committed
+    // above, so a failure here (e.g. EMAIL_USER/EMAIL_PASS unset, or Gmail
+    // rejecting the connection) must not turn a successful booking into a
+    // 500 response. Previously this whole function shared one try/catch,
+    // so a Nodemailer error here silently booked the slot but told the
+    // student booking had failed.
+    try {
+      await sendEmail({
+        to: student.email,
+        subject: "Your Appointment is Confirmed",
+        text: `Hi ${student.fullName},
 
 Your appointment with ${slot.counsellorName} has been successfully confirmed.
 
@@ -51,12 +63,12 @@ Please make sure to join on time.
 
 Thank you!
 MindEase Team`
-    });
+      });
 
-    await sendEmail({
-      to: slot.counsellorEmail,
-      subject: "New Appointment Booked",
-      text: `Hi ${slot.counsellorName},
+      await sendEmail({
+        to: slot.counsellorEmail,
+        subject: "New Appointment Booked",
+        text: `Hi ${slot.counsellorName},
 
 A new appointment has been booked by ${student.fullName}.
 
@@ -71,7 +83,10 @@ Appointment Details:
 Please make sure to be available.
 
 MindEase Team`
-    });
+      });
+    } catch (emailError) {
+      console.error("Booking confirmation email failed (booking still succeeded):", emailError.message);
+    }
 
     res.status(201).json(appointment);
   } catch (error) {

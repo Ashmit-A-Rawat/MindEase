@@ -58,6 +58,16 @@ export default function TestList() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 py-8 px-4">
       <div className="max-w-4xl mx-auto">
+        <button
+          onClick={() => navigate(-1)}
+          className="flex items-center text-indigo-600 hover:text-indigo-800 mb-6 transition-colors duration-200"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+          Back
+        </button>
+
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-bold text-indigo-800 mb-2">
             Assessment History

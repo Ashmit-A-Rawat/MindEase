@@ -85,14 +85,21 @@ export default function MySlots() {
     setWellnessTip(wellnessTips[Math.floor(Math.random() * wellnessTips.length)]);
   }, [counsellorId]);
 
-  // Fetch slots
+  // Fetch slots. GET /slots returns every counsellor's slots (the student
+  // browse-availability page needs that), so this page — showing only
+  // *this* counsellor's own availability — filters client-side by email
+  // rather than trusting the raw response. Waits on `counsellor` since
+  // that's fetched in a separate effect and holds the email to match on.
   useEffect(() => {
+    if (!counsellor?.email) return;
+
     const fetchSlots = async () => {
       try {
         setLoading(true);
         const response = await axiosInstance.get("/slots");
-        setSlots(response.data);
-        calculateStats(response.data);
+        const mySlots = response.data.filter((s) => s.counsellorEmail === counsellor.email);
+        setSlots(mySlots);
+        calculateStats(mySlots);
       } catch (err) {
         console.error("Error fetching slots:", err);
         setError("Failed to load availability slots");
@@ -102,7 +109,7 @@ export default function MySlots() {
     };
 
     fetchSlots();
-  }, []);
+  }, [counsellor]);
 
   // GSAP Animations
   useEffect(() => {
@@ -363,7 +370,16 @@ export default function MySlots() {
               </label>
               <select
                 value={formData.mode}
-                onChange={e => setFormData({...formData, mode: e.target.value})}
+                onChange={e => setFormData({
+                  ...formData,
+                  mode: e.target.value,
+                  // Clear the field for the mode being switched away from —
+                  // otherwise the stale value (e.g. the default "TSEC
+                  // Counseling Center" location) gets saved alongside an
+                  // Online slot's meeting link and the display logic picks
+                  // the wrong one.
+                  ...(e.target.value === "Online" ? { location: "" } : { meetingLink: "" }),
+                })}
                 className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-teal-500 focus:border-transparent"
               >
                 <option value="Offline">In-Person (Offline)</option>

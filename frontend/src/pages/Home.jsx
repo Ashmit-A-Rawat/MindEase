@@ -47,6 +47,31 @@ const Home = () => {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const code = params.get("code");
+    const oauthError = params.get("error");
+
+    // Spotify's registered redirect URI is a fixed http://127.0.0.1:5173/ —
+    // a different origin than http://localhost:5173, where the login session
+    // cookie actually applies (SameSite=Lax cookies aren't sent on cross-site
+    // AJAX, and 127.0.0.1 vs localhost counts as cross-site — every /api1/*
+    // call fails outright with a CORS error from this origin, since the
+    // backend's allowlist only has localhost:5173). This has to be fixed
+    // BEFORE anything else runs, on both the success (?code=) and failure
+    // (?error=) paths — landing here on the wrong origin after Spotify
+    // *rejects* the login is just as broken as after it succeeds.
+    if ((code || oauthError) && window.location.hostname !== "localhost") {
+      window.location.href = `${window.location.protocol}//localhost:${window.location.port}${window.location.pathname}${window.location.search}`;
+      return;
+    }
+
+    if (oauthError) {
+      console.error("Spotify OAuth failed:", oauthError);
+      window.history.replaceState({}, document.title, window.location.pathname);
+      const returnPath = localStorage.getItem("spotify_return_path");
+      localStorage.removeItem("spotify_return_path");
+      if (returnPath) navigate(returnPath);
+      return;
+    }
+
     if (!code) return;
 
     window.history.replaceState({}, document.title, window.location.pathname);
@@ -607,7 +632,7 @@ const Home = () => {
       </footer>
 
       {/* Add custom CSS for animations */}
-      <style jsx>{`
+      <style>{`
         @keyframes softWave {
           0%, 100% {
             transform: translateY(0) scale(1);

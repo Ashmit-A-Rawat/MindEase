@@ -260,6 +260,7 @@ export default function MyAppointments() {
                   onCancel={["Booked","Confirmed","Pending"].includes(appt.status) ? cancelAppointment : null}
                   actionLabel={appt.status==="Pending" ? "Mark Completed" : null}
                   otherPartyName={appt.studentName}
+                  showCallSummary
                 />
               </div>
             ))}

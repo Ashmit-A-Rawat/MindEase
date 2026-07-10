@@ -13,6 +13,7 @@ import "dotenv/config";
 
 import connectDB from "./config/db.js";
 import "./utils/passport.js";
+import Appointment from "./models/Appointment.js";
 
 // MAIN app routes (keep /api1 prefix)
 import slotRoutes from "./routes/slotRoutes.js";
@@ -155,8 +156,14 @@ io.on("connection", (socket) => {
   socket.on("join-call", (appointmentId) => {
     if (!appointmentId) return;
     const room = `call-${appointmentId}`;
+    // Snapshot before joining: the initiator side needs to know whether the
+    // other participant is already here (so it can start signaling right
+    // away) versus still arriving (so it should wait for call-peer-joined
+    // instead of broadcasting its SDP offer into an empty room and losing it).
+    const peerAlreadyPresent = (io.sockets.adapter.rooms.get(room)?.size || 0) > 0;
     socket.join(room);
     socket.to(room).emit("call-peer-joined");
+    socket.emit("call-room-status", { peerPresent: peerAlreadyPresent });
   });
 
   socket.on("call-signal", ({ appointmentId, signal }) => {
@@ -173,10 +180,19 @@ io.on("connection", (socket) => {
 
   // Emotion detection relay: each participant analyzes their own local
   // camera frames against emotion-service directly (never through this
-  // backend) and just relays the resulting label to the other participant.
-  socket.on("emotion-update", ({ appointmentId, emotion, confidence }) => {
+  // backend) and just relays the resulting label to the other participant
+  // live. Also appends a timestamped entry to the appointment's emotionLog
+  // so a counsellor can review the session afterward — fire-and-forget,
+  // never blocks the live relay above and never breaks the call if it fails.
+  socket.on("emotion-update", ({ appointmentId, emotion, confidence, role }) => {
     if (!appointmentId) return;
     socket.to(`call-${appointmentId}`).emit("emotion-update", { emotion, confidence });
+
+    if (emotion && role) {
+      Appointment.findByIdAndUpdate(appointmentId, {
+        $push: { emotionLog: { timestamp: new Date(), emotion, confidence, participantRole: role } },
+      }).catch((err) => console.error("Failed to persist emotion log:", err.message));
+    }
   });
 
   socket.on("disconnecting", () => {

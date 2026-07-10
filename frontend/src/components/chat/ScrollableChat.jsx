@@ -30,7 +30,7 @@ const ScrollableChat = ({ messages }) => {
               {m?.sender?.profilePic ? (
                 <img
                   className="w-8 h-8 rounded-full object-cover shadow-sm"
-                  src={m?.sender?.pic}
+                  src={m?.sender?.profilePic}
                   alt={m?.sender?.name || "User"}
                   title={m?.sender?.name}
                 />

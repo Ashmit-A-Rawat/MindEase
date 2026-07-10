@@ -26,7 +26,7 @@ export default function SlotCard({ slot, onAction, actionLabel }) {
       
       <p className="text-sm text-gray-600 mb-3">
         {slot.mode === 'Online' ? 'Meeting Link: ' : 'Location: '}
-        {slot.location || slot.meetingLink}
+        {slot.mode === 'Online' ? slot.meetingLink : slot.location}
       </p>
       
       {!slot.isBooked && actionLabel && (

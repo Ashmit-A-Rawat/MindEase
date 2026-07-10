@@ -1,8 +1,16 @@
 import { motion } from "framer-motion";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-export default function AppointmentCard({ appointment, onAction, actionLabel, otherPartyName }) {
+const CONCERNING_EMOTIONS = ["sad", "angry", "fear", "disgust"];
+const EMOTION_EMOJI = {
+  happy: "😊", sad: "😢", angry: "😠", fear: "😨",
+  surprise: "😲", disgust: "🤢", neutral: "😐",
+};
+
+export default function AppointmentCard({ appointment, onAction, actionLabel, otherPartyName, showCallSummary }) {
   const navigate = useNavigate();
+  const [summaryOpen, setSummaryOpen] = useState(false);
   const getStatusColor = (status) => {
     switch (status) {
       case 'Completed':
@@ -51,7 +59,7 @@ export default function AppointmentCard({ appointment, onAction, actionLabel, ot
             <span className="font-medium">
               {appointment.mode === 'Online' ? 'Meeting Link:' : 'Location:'}
             </span>
-            <span className="ml-1 break-words">{appointment.location || appointment.meetingLink || 'Not specified'}</span>
+            <span className="ml-1 break-words">{(appointment.mode === 'Online' ? appointment.meetingLink : appointment.location) || 'Not specified'}</span>
           </div>
         </div>
       </div>
@@ -68,6 +76,50 @@ export default function AppointmentCard({ appointment, onAction, actionLabel, ot
           </svg>
           Start Video Call
         </motion.button>
+      )}
+
+      {showCallSummary && appointment.emotionLog?.length > 0 && (
+        <div className="mt-4 border-t border-gray-100 pt-3">
+          <button
+            onClick={() => setSummaryOpen((o) => !o)}
+            className="flex items-center justify-between w-full text-sm font-medium text-gray-700 hover:text-gray-900"
+          >
+            <span>
+              Call Summary
+              {appointment.emotionLog.some((e) => CONCERNING_EMOTIONS.includes(e.emotion)) && (
+                <span className="ml-2 px-2 py-0.5 bg-red-100 text-red-700 rounded-full text-xs">
+                  Flagged moments
+                </span>
+              )}
+            </span>
+            <svg xmlns="http://www.w3.org/2000/svg" className={`h-4 w-4 transition-transform ${summaryOpen ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+
+          {summaryOpen && (
+            <div className="mt-2 max-h-56 overflow-y-auto space-y-1">
+              {appointment.emotionLog.map((entry, i) => {
+                const concerning = CONCERNING_EMOTIONS.includes(entry.emotion);
+                return (
+                  <div
+                    key={i}
+                    className={`flex items-center justify-between text-xs px-2 py-1.5 rounded ${concerning ? "bg-red-50 text-red-800" : "bg-gray-50 text-gray-600"}`}
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <span>{EMOTION_EMOJI[entry.emotion] || "🙂"}</span>
+                      <span className="capitalize">{entry.emotion}</span>
+                      <span className="text-[10px] opacity-70">({entry.participantRole})</span>
+                    </span>
+                    <span className="opacity-70">
+                      {new Date(entry.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
       )}
 
       {actionLabel && (
