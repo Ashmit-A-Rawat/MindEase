@@ -178,10 +178,11 @@ io.on("connection", (socket) => {
     socket.leave(room);
   });
 
-  // Emotion detection relay: each participant analyzes their own local
-  // camera frames against emotion-service directly (never through this
-  // backend) and just relays the resulting label to the other participant
-  // live. Also appends a timestamped entry to the appointment's emotionLog
+  // Emotion detection relay: each participant runs detection on their own
+  // camera locally in the browser (face-api.js, see VideoCall.jsx — no
+  // frame ever leaves the client) and just relays the resulting label to
+  // the other participant live. Also appends a timestamped entry to the
+  // appointment's emotionLog
   // so a counsellor can review the session afterward — fire-and-forget,
   // never blocks the live relay above and never breaks the call if it fails.
   socket.on("emotion-update", ({ appointmentId, emotion, confidence, role }) => {

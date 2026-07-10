@@ -3,12 +3,28 @@ import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import io from "socket.io-client";
 import Peer from "simple-peer";
+import * as faceapi from "@vladmandic/face-api";
 import { useAuth } from "../contexts/useAuth.js";
 import { BACKEND_URL } from "../lib/api.js";
 
 const ENDPOINT = BACKEND_URL;
-const EMOTION_API = import.meta.env.VITE_EMOTION_SERVICE_URL || "http://localhost:5006";
 const EMOTION_CAPTURE_INTERVAL_MS = 4000;
+// tiny_face_detector + face_expression models (~525KB total) served as static
+// assets from public/models/. Runs entirely in-browser via face-api.js
+// (TensorFlow.js) — replaced the old emotion-service Python microservice
+// (OpenCV + fer + TF-Lite), which cost a multi-minute cold-import every time
+// it started and needed its own always-running process. Detection now costs
+// nothing until a call actually starts, and there's no separate service to
+// manage or keep alive.
+const FACE_MODELS_URL = "/models";
+
+// face-api.js's expression keys don't quite match this app's naming
+// (EMOTION_EMOJI, backend emotionLog, etc., which came from the old
+// service's 7-class CNN labels) — map rather than rename everywhere else.
+const FACEAPI_TO_APP_EMOTION = {
+  neutral: "neutral", happy: "happy", sad: "sad", angry: "angry",
+  fearful: "fear", disgusted: "disgust", surprised: "surprise",
+};
 
 // STUN alone (the previous setup) only helps peers discover their public
 // IP/port — it does nothing when a NAT won't allow direct inbound traffic
@@ -59,7 +75,6 @@ export default function VideoCall() {
 
   const localVideoRef = useRef(null);
   const remoteVideoRef = useRef(null);
-  const captureCanvasRef = useRef(null);
   const socketRef = useRef(null);
   const peerRef = useRef(null);
   const localStreamRef = useRef(null);
@@ -151,34 +166,41 @@ export default function VideoCall() {
         setRemoteEmotion(emotion ? { emotion, confidence } : null);
       });
 
-      // Periodically capture a local frame and analyze it against
-      // emotion-service. Best-effort: a down/slow emotion-service should
+      // Load the face detector + expression models once, then periodically
+      // run detection directly on the local <video> element — entirely
+      // in-browser via face-api.js/TensorFlow.js, no network call, no
+      // separate service. Best-effort: a slow/failed detection pass should
       // never affect the call itself, so every failure is swallowed.
+      try {
+        await Promise.all([
+          faceapi.nets.tinyFaceDetector.loadFromUri(FACE_MODELS_URL),
+          faceapi.nets.faceExpressionNet.loadFromUri(FACE_MODELS_URL),
+        ]);
+      } catch (err) {
+        console.warn("Emotion detection models failed to load:", err.message);
+        return;
+      }
+      if (cancelled) return;
+
       emotionIntervalRef.current = setInterval(async () => {
         const video = localVideoRef.current;
-        const canvas = captureCanvasRef.current;
-        if (!video || !canvas || video.videoWidth === 0) return;
+        if (!video || video.videoWidth === 0) return;
         try {
-          canvas.width = video.videoWidth;
-          canvas.height = video.videoHeight;
-          canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
-          const dataUrl = canvas.toDataURL("image/jpeg", 0.7);
+          const detection = await faceapi
+            .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
+            .withFaceExpressions();
+          if (!detection || !socketRef.current) return;
 
-          const res = await fetch(`${EMOTION_API}/detect`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ image: dataUrl }),
+          const [topExpression, topScore] = Object.entries(detection.expressions).sort(
+            (a, b) => b[1] - a[1]
+          )[0];
+
+          socketRef.current.emit("emotion-update", {
+            appointmentId,
+            emotion: FACEAPI_TO_APP_EMOTION[topExpression] || topExpression,
+            confidence: topScore,
+            role: currentUser.role,
           });
-          if (!res.ok) return;
-          const result = await res.json();
-          if (result.face_detected && socketRef.current) {
-            socketRef.current.emit("emotion-update", {
-              appointmentId,
-              emotion: result.emotion,
-              confidence: result.confidence,
-              role: currentUser.role,
-            });
-          }
         } catch (err) {
           console.warn("Emotion detection unavailable:", err.message);
         }
@@ -237,9 +259,6 @@ export default function VideoCall() {
           className="w-full h-full object-cover bg-black"
           style={{ minHeight: "70vh" }}
         />
-        {/* Hidden canvas used only to grab local frames for emotion detection */}
-        <canvas ref={captureCanvasRef} className="hidden" />
-
         {status === "connected" && remoteEmotion && (
           <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-sm rounded-full px-4 py-2 flex items-center gap-2">
             <span className="text-xl">{EMOTION_EMOJI[remoteEmotion.emotion] || "🙂"}</span>

@@ -15,8 +15,8 @@ const appointmentSchema = new mongoose.Schema({
   // allowed Pending/Completed — cancelling an appointment crashed with a
   // validation error since "Cancelled" had nowhere to go.
   status: { type: String, default: "Pending", enum: ["Pending", "Booked", "Confirmed", "Completed", "Cancelled"] },
-  // Populated live during the call from VideoCall.jsx's periodic emotion-service
-  // captures (see server.js's "emotion-update" socket handler) — a timestamped
+  // Populated live during the call from VideoCall.jsx's periodic client-side
+  // face-api.js detection (see server.js's "emotion-update" socket handler) — a timestamped
   // record of each participant's detected emotion, so a counsellor can review
   // where a student showed concerning affect after the session instead of only
   // seeing the live overlay in the moment.

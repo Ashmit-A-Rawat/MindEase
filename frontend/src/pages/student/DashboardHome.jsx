@@ -5,16 +5,17 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useTranslation } from "react-i18next";
 import api from "../../lib/api";
 import AppointmentCard from "../../components/AppointmentCard.jsx";
-import {
-  IconSearch,
-  IconRefresh,
-  IconAlertCircle,
-  IconX,
-  IconCalendar,
-  IconMoodSmile,
-  IconBrain,
-  IconHeartbeat,
-} from "@tabler/icons-react";
+// Subpath imports, not the barrel (`@tabler/icons-react`) — the barrel
+// re-exports thousands of icons from one file, which esbuild/Vite's
+// dependency pre-bundler hangs on indefinitely trying to process.
+import IconSearch from "@tabler/icons-react/dist/esm/icons/IconSearch.mjs";
+import IconRefresh from "@tabler/icons-react/dist/esm/icons/IconRefresh.mjs";
+import IconAlertCircle from "@tabler/icons-react/dist/esm/icons/IconAlertCircle.mjs";
+import IconX from "@tabler/icons-react/dist/esm/icons/IconX.mjs";
+import IconCalendar from "@tabler/icons-react/dist/esm/icons/IconCalendar.mjs";
+import IconMoodSmile from "@tabler/icons-react/dist/esm/icons/IconMoodSmile.mjs";
+import IconBrain from "@tabler/icons-react/dist/esm/icons/IconBrain.mjs";
+import IconHeartbeat from "@tabler/icons-react/dist/esm/icons/IconHeartbeat.mjs";
 
 // Register GSAP plugins
 gsap.registerPlugin(ScrollTrigger);

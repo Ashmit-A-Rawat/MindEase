@@ -2,20 +2,21 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import api from "../../lib/api.js";
 import AppointmentCard from "../../components/AppointmentCard.jsx";
-import { 
-  IconSearch, 
-  IconCalendar, 
-  IconClock,
-  IconRefresh,
-  IconChartBar,
-  IconTrendingUp,
-  IconInfoCircle,
-  IconSortAscending,
-  IconChevronDown,
-  IconLoader,
-  IconAlertCircle,
-  IconX
-} from "@tabler/icons-react";
+// Subpath imports, not the barrel (`@tabler/icons-react`) — the barrel
+// re-exports thousands of icons from one file, which esbuild/Vite's
+// dependency pre-bundler hangs on indefinitely trying to process.
+import IconSearch from "@tabler/icons-react/dist/esm/icons/IconSearch.mjs";
+import IconCalendar from "@tabler/icons-react/dist/esm/icons/IconCalendar.mjs";
+import IconClock from "@tabler/icons-react/dist/esm/icons/IconClock.mjs";
+import IconRefresh from "@tabler/icons-react/dist/esm/icons/IconRefresh.mjs";
+import IconChartBar from "@tabler/icons-react/dist/esm/icons/IconChartBar.mjs";
+import IconTrendingUp from "@tabler/icons-react/dist/esm/icons/IconTrendingUp.mjs";
+import IconInfoCircle from "@tabler/icons-react/dist/esm/icons/IconInfoCircle.mjs";
+import IconSortAscending from "@tabler/icons-react/dist/esm/icons/IconSortAscending.mjs";
+import IconChevronDown from "@tabler/icons-react/dist/esm/icons/IconChevronDown.mjs";
+import IconLoader from "@tabler/icons-react/dist/esm/icons/IconLoader.mjs";
+import IconAlertCircle from "@tabler/icons-react/dist/esm/icons/IconAlertCircle.mjs";
+import IconX from "@tabler/icons-react/dist/esm/icons/IconX.mjs";
 
 export default function MyAppointments() {
   const { counsellorId } = useParams();

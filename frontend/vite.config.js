@@ -20,4 +20,13 @@ export default defineConfig({
     // Spotify Developer Dashboard, so it can't just be swapped to localhost).
     host: "0.0.0.0",
   },
+  optimizeDeps: {
+    // @vladmandic/face-api bundles all of TensorFlow.js — Vite's default
+    // lazy dependency scanner (which discovers deps by crawling imports at
+    // request time) was hanging indefinitely trying to pre-bundle it and
+    // everything else on first load. Listing it explicitly forces eager
+    // pre-bundling at server startup instead, which is more reliable for
+    // large/complex dependency graphs like this one.
+    include: ["@vladmandic/face-api"],
+  },
 })

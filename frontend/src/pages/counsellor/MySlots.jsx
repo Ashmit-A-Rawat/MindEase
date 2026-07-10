@@ -6,22 +6,23 @@ import Modal from "../../components/Modal.jsx";
 import { motion, AnimatePresence } from "framer-motion";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { 
-  IconCalendar, 
-  IconClock, 
-  IconVideo, 
-  IconMapPin, 
-  IconPlus, 
-  IconTrash, 
-  IconHeart, 
-  IconUsers, 
-  IconChartBar, 
-  IconSettings, 
-  IconRefresh,
-  IconLoader,
-  IconAlertCircle,
-  IconX
-} from "@tabler/icons-react";
+// Subpath imports, not the barrel (`@tabler/icons-react`) — the barrel
+// re-exports thousands of icons from one file, which esbuild/Vite's
+// dependency pre-bundler hangs on indefinitely trying to process.
+import IconCalendar from "@tabler/icons-react/dist/esm/icons/IconCalendar.mjs";
+import IconClock from "@tabler/icons-react/dist/esm/icons/IconClock.mjs";
+import IconVideo from "@tabler/icons-react/dist/esm/icons/IconVideo.mjs";
+import IconMapPin from "@tabler/icons-react/dist/esm/icons/IconMapPin.mjs";
+import IconPlus from "@tabler/icons-react/dist/esm/icons/IconPlus.mjs";
+import IconTrash from "@tabler/icons-react/dist/esm/icons/IconTrash.mjs";
+import IconHeart from "@tabler/icons-react/dist/esm/icons/IconHeart.mjs";
+import IconUsers from "@tabler/icons-react/dist/esm/icons/IconUsers.mjs";
+import IconChartBar from "@tabler/icons-react/dist/esm/icons/IconChartBar.mjs";
+import IconSettings from "@tabler/icons-react/dist/esm/icons/IconSettings.mjs";
+import IconRefresh from "@tabler/icons-react/dist/esm/icons/IconRefresh.mjs";
+import IconLoader from "@tabler/icons-react/dist/esm/icons/IconLoader.mjs";
+import IconAlertCircle from "@tabler/icons-react/dist/esm/icons/IconAlertCircle.mjs";
+import IconX from "@tabler/icons-react/dist/esm/icons/IconX.mjs";
 
 // Register GSAP plugins
 if (typeof window !== "undefined") {

@@ -1,5 +1,9 @@
 // src/components/Sidebar.jsx
-import { IconChartLine } from "@tabler/icons-react";
+// Subpath imports, not the barrel (`@tabler/icons-react`) — the barrel
+// re-exports thousands of icons from one file, which esbuild/Vite's
+// dependency pre-bundler hangs on indefinitely trying to process. Subpath
+// imports pull in only the specific icon files actually used.
+import IconChartLine from "@tabler/icons-react/dist/esm/icons/IconChartLine.mjs";
 import React, { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 

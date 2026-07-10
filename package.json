@@ -4,16 +4,15 @@
   "version": "0.0.0",
   "description": "Root dev orchestrator — boots every MindEase service together. See .env.example for the port map.",
   "scripts": {
-    "setup:python": "python3 -m venv ml-service/.venv && ml-service/.venv/bin/pip install -r ml-service/requirements.txt && python3.11 -m venv StudentVerification/.venv && StudentVerification/.venv/bin/pip install -r StudentVerification/requirements.txt && python3.11 -m venv emotion-service/.venv && emotion-service/.venv/bin/pip install -r emotion-service/requirements.txt && python3.11 -m venv chat-service/.venv && chat-service/.venv/bin/pip install -r chat-service/requirements.txt",
+    "setup:python": "python3 -m venv ml-service/.venv && ml-service/.venv/bin/pip install -r ml-service/requirements.txt && python3.11 -m venv StudentVerification/.venv && StudentVerification/.venv/bin/pip install -r StudentVerification/requirements.txt && python3.11 -m venv chat-service/.venv && chat-service/.venv/bin/pip install -r chat-service/requirements.txt",
     "build:chat-index": "cd chat-service && .venv/bin/python build_index.py",
-    "dev": "concurrently -n backend,frontend,ml,verify,spotify,emotion,chat -c blue,green,magenta,yellow,cyan,red,white \"npm run dev --prefix backend\" \"npm run dev --prefix frontend\" \"cd ml-service && .venv/bin/python app.py\" \"StudentVerification/.venv/bin/uvicorn main:app --reload --port 8000 --app-dir StudentVerification\" \"npm run server --prefix Spotify\" \"cd emotion-service && .venv/bin/python main.py\" \"cd chat-service && .venv/bin/python main.py\"",
+    "dev": "concurrently -n backend,frontend,ml,verify,spotify,chat -c blue,green,magenta,yellow,cyan,white \"npm run dev --prefix backend\" \"npm run dev --prefix frontend\" \"cd ml-service && .venv/bin/python app.py\" \"StudentVerification/.venv/bin/uvicorn main:app --reload --port 8000 --app-dir StudentVerification\" \"npm run server --prefix Spotify\" \"cd chat-service && .venv/bin/python main.py\"",
     "dev:core": "concurrently -n backend,frontend,ml,spotify,chat -c blue,green,magenta,cyan,white \"npm run dev --prefix backend\" \"npm run dev --prefix frontend\" \"cd ml-service && .venv/bin/python app.py\" \"npm run server --prefix Spotify\" \"cd chat-service && .venv/bin/python main.py\"",
     "dev:backend": "npm run dev --prefix backend",
     "dev:frontend": "npm run dev --prefix frontend",
     "dev:ml": "cd ml-service && .venv/bin/python app.py",
     "dev:ocr": "StudentVerification/.venv/bin/uvicorn main:app --reload --port 8000 --app-dir StudentVerification",
     "dev:verify": "StudentVerification/.venv/bin/uvicorn main:app --reload --port 8000 --app-dir StudentVerification",
-    "dev:emotion": "cd emotion-service && .venv/bin/python main.py",
     "dev:spotify": "npm run server --prefix Spotify",
     "dev:chat": "cd chat-service && .venv/bin/python main.py"
   },
